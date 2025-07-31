@@ -55,7 +55,11 @@ CLOSING_M = st.number_input("Input the latest month:", min_value=1, max_value=12
 CURRENCY = st.selectbox("Select the currency amount display:", ["LCC and EUR","LCC only", "EUR only" ])
 
 # Combine all monthly data
-df = pd.concat(all_dfs, ignore_index=True)
+if all_dfs:
+    df = pd.concat(all_dfs, ignore_index=True)
+else:
+    st.warning("⚠️ No valid Excel files were processed. Please upload files in the format 'YYYYMx' and ensure they contain valid data.")
+    st.stop()
 
 # === 3. Select relevant columns ===
 columns_needed = [
