@@ -29,7 +29,7 @@ def to_excel(df):
         worksheet.add_table(0, 0, num_rows, num_cols - 1, {
             'name': "MTD",
             'columns': column_settings,
-            'style': 'TableStyleMedium9'  # Optional style
+            'style': 'TableStyleLight8'  # Optional style
         })
 
         # Optional: Auto-fit column width
