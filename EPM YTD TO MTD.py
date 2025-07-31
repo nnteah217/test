@@ -27,10 +27,10 @@ if uploaded_files:
             match = re.search(r"(\d{4})M(\d+)", file.name)
             if match:
                 year, month = int(match.group(1)), int(match.group(2))
-                    df = pd.read_excel(file, skiprows=4, na_values=[], keep_default_na=False)
-                    df["YEAR"] = year
-                    df["MONTH"] = month
-                    all_dfs.append(df)
+                df = pd.read_excel(file, skiprows=4, na_values=[], keep_default_na=False)
+                df["YEAR"] = year
+                df["MONTH"] = month
+                all_dfs.append(df)
 
     if all_dfs:
         # Input fields after successful upload
@@ -38,7 +38,6 @@ if uploaded_files:
         CURRENCY = st.selectbox("Select the currency amount display:", ["LCC and EUR", "LCC only", "EUR only"])
 
         if CLOSING_M is not None and CURRENCY:
-            try:
                 df = pd.concat(all_dfs, ignore_index=True)
 
                 # Columns we want to retain
@@ -134,4 +133,3 @@ if uploaded_files:
                     data=to_excel(df_final),
                     file_name=output_filename
                 )
-
