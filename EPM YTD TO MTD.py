@@ -14,15 +14,15 @@ def to_excel(df):
         df.to_excel(writer, index=False)
     return output.getvalue()
 
-st.title("📂 Upload FASTCLOSE DATA to Convert")
-uploaded_files_FastClose = st.file_uploader("", type=["xlsx"], accept_multiple_files=True)
+st.title("📂 Upload excel DATA to Convert")
+uploaded_files = st.file_uploader("", type=["xlsx"], accept_multiple_files=True)
 
 # === 2. Read and combine Excel files ===
 all_dfs = []
 invalid_files = []
 
-if uploaded_files_FastClose:
-    for file in uploaded_files_FastClose:
+if uploaded_files:
+    for file in uploaded_files:
         if file.name.endswith(".xlsx"):
             match = re.search(r"(\d{4})M(\d+)", file.name)
             if match:
@@ -65,9 +65,10 @@ if uploaded_files_FastClose:
                 # --- EUR Processing ---
                 df_EUR = df.copy()
                 for m in range(1, 13):
-                    df_EUR[str(m)] = np.where(
-                        df_EUR["MONTH"] == m, df_EUR["Amount In EUR"],
-                        np.where(df_EUR["MONTH"] == m - 1, -df_EUR["Amount In EUR"], 0)
+                    df_EUR[str(m)] = 
+                        np.where(df_EUR["MONTH"] == m, df_EUR["Amount In EUR"],
+                        np.where(df_EUR["MONTH"] == m - 1, -df_EUR["Amount In EUR"], 
+                        0)
                     )
 
                 df_EUR = df_EUR.melt(
