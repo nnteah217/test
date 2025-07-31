@@ -47,11 +47,9 @@ with col1:
     uploaded_files = st.file_uploader("", type=["xlsx"], accept_multiple_files=True)
     subcol1, subcol2 = st.columns(2)
     with subcol1:
-        st.subheader("Input maximum month:")
-        CLOSING_M = st.number_input(min_value=1, max_value=12, step=1)
-    with subcol2:
-        st.subheader("Select currency amount:")    
-        CURRENCY = st.selectbox(["LCC and EUR", "LCC only", "EUR only"])
+        CLOSING_M = st.number_input("Input maximum month:",min_value=1, max_value=12, step=1)
+    with subcol2:  
+        CURRENCY = st.selectbox("Select currency amount:",["LCC and EUR", "LCC only", "EUR only"])
     run_btn = st.button("🚀 Convert")
 
 # === Run When Button is Clicked ===
