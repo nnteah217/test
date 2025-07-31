@@ -75,9 +75,9 @@ if uploaded_files:
                     "Amount": "sum",
                     "Amount In EUR": "sum"
                 }).reset_index().rename(columns={
-                "Amount": "Amount_Next",
+                "Amount" : "Amount_Next",
                 "Amount In EUR": "Amount In EUR_Next",
-                "MONTH+1","MONTH"
+                "MONTH+1" : "MONTH"
                 })
 
                 # Now merge back to original dataframe
