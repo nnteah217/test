@@ -18,16 +18,33 @@ uploaded_file_FastClose = st.file_uploader("", type=["xlsx"], accept_multiple_fi
 # === 2. Read and combine Excel files ===
 
 all_dfs = []
+
+if uploaded_file_FastClose:
+    for file in uploaded_file_FastClose:
+        if file.name.endswith(".xlsx"):
+            match = re.search(r"(\d{4})M(\d+)", file.name)
+            if match:
+                try:
+                    year, month = int(match.group(1)), int(match.group(2))
+                    df = pd.read_excel(file, skiprows=4, na_values=[], keep_default_na=False).assign(YEAR=year, MONTH=month)
+                    all_dfs.append(df)
+                except Exception as e:
+                    st.error(f"Error reading file `{file.name}`: {e}")
+                    valid_files = False
+            else:
+                st.error(f"Filename `{file.name}` does not match the pattern YYYYMn (e.g., 2025M6).")
+                valid_files = False
+        else:
+            st.error(f"File `{file.name}` is not an Excel file.")
+            valid_files = False
+
+# Only show the next step if all files are valid
+if uploaded_file_FastClose and valid_files:
+    st.success("✅ All files uploaded and validated successfully.")
+
 CLOSING_M = st.number_input("Input the latest month:", min_value=1, max_value=12, step=1, format="%d")
 CURRENCY = st.selectbox("Select the currency amount display:", ["LCC and EUR","LCC only", "EUR only" ])
 
-for file in uploaded_file_FastClose:
-    if file.name.endswith(".xlsx"):
-        match = re.search(r"(\d{4})M(\d+)", file.name)
-        if match:
-            year, month = int(match.group(1)), int(match.group(2))
-            df = pd.read_excel(file, skiprows=4,na_values=[], keep_default_na=False).assign(YEAR=year, MONTH=month)
-            all_dfs.append(df)
 # Combine all monthly data
 df = pd.concat(all_dfs, ignore_index=True)
 
