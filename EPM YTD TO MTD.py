@@ -79,14 +79,6 @@ if uploaded_files:
                 # Now merge back to original dataframe
                 df = df.merge(df_next, how="left", on=columns_id).fillna(0)
 
-                # Subtract current month - next month
-                df["LCC AMOUNT"] = df["Amount"] - df["Amount_Next"]
-                df["EUR AMOUNT"] = df["Amount In EUR"] - df["Amount In EUR_Next"]            
-
-                df = df.drop(columns=["Amount", "Amount In EUR","MONTH+1"])
-                df = df[(df["MONTH"] <= CLOSING_M)]   
-                df = df[~((df["EUR AMOUNT"] == 0) & (df["LCC AMOUNT"] == 0))]
-
                 df_final = df.sort_values(by=["YEAR", "MONTH"])
 
                 # --- Export ---
