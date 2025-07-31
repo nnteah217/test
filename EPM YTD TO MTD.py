@@ -39,11 +39,11 @@ def to_excel(df):
     return output.getvalue()
 
 # === Streamlit UI ===
-st.title("📂 Upload Excel DATA to Convert")
+st.title("📂 Upload Excel Files to Convert")
 uploaded_files = st.file_uploader("", type=["xlsx"], accept_multiple_files=True)
 CLOSING_M = st.number_input("Input the latest month:", min_value=1, max_value=12, step=1)
 CURRENCY = st.selectbox("Select the currency amount display:", ["LCC and EUR", "LCC only", "EUR only"])
-run_btn = st.button("🚀 Run Processing")
+run_btn = st.button("🚀 Convert")
 
 # === Run When Button is Clicked ===
 if run_btn:
