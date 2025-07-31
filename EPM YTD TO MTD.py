@@ -27,7 +27,6 @@ if uploaded_files:
             match = re.search(r"(\d{4})M(\d+)", file.name)
             if match:
                 year, month = int(match.group(1)), int(match.group(2))
-                try:
                     df = pd.read_excel(file, skiprows=4, na_values=[], keep_default_na=False)
                     df["YEAR"] = year
                     df["MONTH"] = month
