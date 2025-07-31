@@ -13,15 +13,13 @@ def to_excel(df):
         df.to_excel(writer, index=False)
     return output.getvalue()
 
-col1, col2 = st.columns(2)
-with col1:
-    st.title("📁 Upload FASTCLOSE DATA to Convert")
-    uploaded_file_FastClose = st.file_uploader("", type=["xlsx"], accept_multiple_files=True)
+st.title("📁 Upload FASTCLOSE DATA to Convert")
+uploaded_file_FastClose = st.file_uploader("", type=["xlsx"], accept_multiple_files=True)
 # === 2. Read and combine Excel files ===
 
 all_dfs = []
-CLOSING_M = st.number_input("Input the highest month:", min_value=1, max_value=12, step=1, format="%d")
-CURRENCY = st.selectbox("Select the currency amount:", ["LCC and EUR","LCC only", "EUR only" ])
+CLOSING_M = st.number_input("Input the latest month:", min_value=1, max_value=12, step=1, format="%d")
+CURRENCY = st.selectbox("Select the currency amount display:", ["LCC and EUR","LCC only", "EUR only" ])
 
 for file in uploaded_file_FastClose:
     if file.name.endswith(".xlsx"):
@@ -207,10 +205,9 @@ elif CURRENCY == "LCC and EUR":
 
 output_filename = f"FASTCLOSE_{currency_choice}_MTD{max_month}_{date_str}.xlsx"
 
-with col2:  
-        st.download_button(
-            label="📥 Download Here",
-            data=to_excel(df),
-            file_name=output_filename)
+st.download_button(
+    label="📥 Download Here",
+    data=to_excel(df),
+    file_name=output_filename)
 
 
