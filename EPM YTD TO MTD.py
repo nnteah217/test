@@ -120,5 +120,3 @@ if run_btn:
     else:
         st.warning("⚠️ No valid Excel data found. Please upload the correct file(s).")
 
-else:
-    st.info("📂 Please upload your FastClose Excel files to continue.")
