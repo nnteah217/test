@@ -17,49 +17,43 @@ st.title("📁 Upload FASTCLOSE DATA to Convert")
 uploaded_file_FastClose = st.file_uploader("", type=["xlsx"], accept_multiple_files=True)
 # === 2. Read and combine Excel files ===
 
-valid_files = True
 all_dfs = []
+invalid_files = []
 
-if uploaded_file_FastClose:
-    for file in uploaded_file_FastClose:
+if uploaded_files:
+    for file in uploaded_files:
         if file.name.endswith(".xlsx"):
             match = re.search(r"(\d{4})M(\d+)", file.name)
             if match:
+                year, month = int(match.group(1)), int(match.group(2))
                 try:
-                    year, month = int(match.group(1)), int(match.group(2))
-                    df = pd.read_excel(file, skiprows=4, na_values=[], keep_default_na=False).assign(YEAR=year, MONTH=month)
+                    df = pd.read_excel(file, skiprows=4, na_values=[], keep_default_na=False)
+                    df["YEAR"] = year
+                    df["MONTH"] = month
                     all_dfs.append(df)
                 except Exception as e:
-                    st.error(f"❌ Error reading file `{file.name}`: {e}")
-                    valid_files = False
+                    invalid_files.append(f"{file.name} - Error: {e}")
             else:
-                st.error(f"❌ Filename `{file.name}` does not match the pattern YYYYMn (e.g., 2025M6).")
-                valid_files = False
-        else:
-            st.error(f"❌ File `{file.name}` is not an Excel file.")
-            valid_files = False
+                invalid_files.append(f"{file.name} - Filename does not match 'YYYYMx' format")
 
-    if valid_files:
-        st.success("✅ All files uploaded and validated successfully.")
-        # Proceed to next steps here
+    # Show error if any file failed
+    if invalid_files:
+        st.error("Some files could not be processed:")
+        for msg in invalid_files:
+            st.markdown(f"- {msg}")
+
+    # Only show next steps if we have valid data
+    if all_dfs:
+        # Input fields after upload succeeds
+        CLOSING_M = st.number_input("Input the latest month:", min_value=1, max_value=12, step=1)
+        CURRENCY = st.selectbox("Select the currency amount display:", ["LCC and EUR", "LCC only", "EUR only"])
+
+        # Combine data
+        df = pd.concat(all_dfs, ignore_index=True)
     else:
-        st.warning("⚠️ Please correct the above errors before continuing.")
+        st.warning("⚠️ No valid Excel data found. Please upload the correct file(s).")
 else:
     st.info("📂 Please upload your FastClose Excel files to continue.")
-
-# Only show the next step if all files are valid
-if uploaded_file_FastClose and valid_files:
-    st.success("✅ All files uploaded and validated successfully.")
-
-CLOSING_M = st.number_input("Input the latest month:", min_value=1, max_value=12, step=1, format="%d")
-CURRENCY = st.selectbox("Select the currency amount display:", ["LCC and EUR","LCC only", "EUR only" ])
-
-# Combine all monthly data
-if all_dfs:
-    df = pd.concat(all_dfs, ignore_index=True)
-else:
-    st.warning("⚠️ No valid Excel files were processed. Please upload files in the format 'YYYYMx' and ensure they contain valid data.")
-    st.stop()
 
 # === 3. Select relevant columns ===
 columns_needed = [
