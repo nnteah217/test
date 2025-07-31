@@ -8,6 +8,10 @@ from io import BytesIO
 
 st.set_page_config(layout="wide")
 
+def get_col_widths(df):
+    """Calculate appropriate column widths based on contents."""
+    return [max(df[col].astype(str).map(len).max(), len(col)) + 2 for col in df.columns]
+
 def to_excel(df):
     output = BytesIO()
     with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
