@@ -17,6 +17,7 @@ st.title("📁 Upload FASTCLOSE DATA to Convert")
 uploaded_file_FastClose = st.file_uploader("", type=["xlsx"], accept_multiple_files=True)
 # === 2. Read and combine Excel files ===
 
+valid_files = True
 all_dfs = []
 
 if uploaded_file_FastClose:
@@ -29,14 +30,22 @@ if uploaded_file_FastClose:
                     df = pd.read_excel(file, skiprows=4, na_values=[], keep_default_na=False).assign(YEAR=year, MONTH=month)
                     all_dfs.append(df)
                 except Exception as e:
-                    st.error(f"Error reading file `{file.name}`: {e}")
+                    st.error(f"❌ Error reading file `{file.name}`: {e}")
                     valid_files = False
             else:
-                st.error(f"Filename `{file.name}` does not match the pattern YYYYMn (e.g., 2025M6).")
+                st.error(f"❌ Filename `{file.name}` does not match the pattern YYYYMn (e.g., 2025M6).")
                 valid_files = False
         else:
-            st.error(f"File `{file.name}` is not an Excel file.")
+            st.error(f"❌ File `{file.name}` is not an Excel file.")
             valid_files = False
+
+    if valid_files:
+        st.success("✅ All files uploaded and validated successfully.")
+        # Proceed to next steps here
+    else:
+        st.warning("⚠️ Please correct the above errors before continuing.")
+else:
+    st.info("📂 Please upload your FastClose Excel files to continue.")
 
 # Only show the next step if all files are valid
 if uploaded_file_FastClose and valid_files:
