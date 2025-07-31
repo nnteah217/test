@@ -135,7 +135,7 @@ if uploaded_files:
 
                 currency_choice = {
                     "LCC only": "LCC",
-                    "EUR only": "EUR",v
+                    "EUR only": "EUR",
                     "LCC and EUR": "LCCEUR"
                 }.get(CURRENCY, "")
 
