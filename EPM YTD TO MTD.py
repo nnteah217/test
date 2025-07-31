@@ -53,34 +53,35 @@ if uploaded_files:
                 df = pd.concat(all_dfs, ignore_index=True)
 
                 # Columns we want to retain
-                columns_needed = [
+                columns_origin = [
                     "Entity", "Cons", "Scenario", "View", "Account Parent", "Account", "Flow", "Origin", "IC",
                     "FinalClient Group", "FinalClient", "Client", "FinancialManager", "Governance Level",
                     "Governance", "Commodity", "AuditID", "UD8", "Project", "Employee", "Supplier",
                     "InvoiceType", "ContractType", "AmountCurrency", "IntercoType", "ICDetails", "EmployedBy",
                     "AccountType", "Amount", "Amount In EUR", "YEAR", "MONTH"
                 ]
-                df = df[columns_needed]
+                df = df[columns_origin]
                 df["MONTH+1"]=df["MONTH"]+1
 
-                columns_id_m1 =[
+                columns_next =[
                     "Entity", "Cons", "Scenario", "View", "Account Parent", "Account", "Flow", "Origin", "IC",
                     "FinalClient Group", "FinalClient", "Client", "FinancialManager", "Governance Level",
                     "Governance", "Commodity", "AuditID", "UD8", "Project", "Employee", "Supplier",
                     "InvoiceType", "ContractType", "AmountCurrency", "IntercoType", "ICDetails", "EmployedBy",
-                    "AccountType", "Amount", "Amount In EUR", "YEAR", "MONTH+1"
+                    "AccountType", "YEAR", "MONTH+1"
                 ]
                 # First, create the reference DataFrame with next month's aggregated values
-                df_next = df.groupby(columns_id_m1).agg({
+                df_next = df.groupby(columns_next).agg({
                     "Amount": "sum",
                     "Amount In EUR": "sum"
                 }).reset_index().rename(columns={
                 "Amount": "Amount_Next",
-                "Amount In EUR": "Amount In EUR_Next"
+                "Amount In EUR": "Amount In EUR_Next",
+                "MONTH+1","MONTH"
                 })
 
                 # Now merge back to original dataframe
-                df = df.merge(df_next, how="left", on=columns_id_m1).fillna(0)
+                df = df.merge(df_next, how="left", on=columns_origin - ["Amount", "Amount In EUR"]).fillna(0)
 
                 # Subtract current month - next month
                 df["LCC AMOUNT"] = df["Amount"] - df["Amount_Next"]
