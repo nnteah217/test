@@ -89,7 +89,7 @@ if uploaded_files:
                 })
 
                 # Now merge back to original dataframe
-                df = df.merge(df,df_next, how="outer", on=columns_id).fillna(0)
+                df = df.merge(df_next, how="outer", on=columns_id).fillna(0)
 
                 # Subtract
                 df["LCC AMOUNT"] = df["Amount"] - df["Amount_Next"]
