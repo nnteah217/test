@@ -32,8 +32,6 @@ if uploaded_files:
                     df["YEAR"] = year
                     df["MONTH"] = month
                     all_dfs.append(df)
-            else:
-                invalid_files.append(f"{file.name} - Filename does not match 'YYYYMx' format")
 
     if all_dfs:
         # Input fields after successful upload
