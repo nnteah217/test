@@ -16,12 +16,15 @@ def to_excel(df):
 
 st.title("📂 Upload Excel DATA to Convert")
 uploaded_files = st.file_uploader("", type=["xlsx"], accept_multiple_files=True)
+CLOSING_M = st.number_input("Input the latest month:", min_value=1, max_value=12, step=1)
+CURRENCY = st.selectbox("Select the currency amount display:", ["LCC and EUR", "LCC only", "EUR only"])
+run_btn = st.button("🚀 Run Processing")
 
 # === 2. Read and combine Excel files ===
 all_dfs = []
 invalid_files = []
 
-if uploaded_files:
+if run_btn:
     for file in uploaded_files:
         if file.name.endswith(".xlsx"):
             match = re.search(r"(\d{4})M(\d+)", file.name)
@@ -42,13 +45,6 @@ if uploaded_files:
         for msg in invalid_files:
             st.markdown(f"- {msg}")
 
-    if all_dfs:
-        CLOSING_M = st.number_input("Input the latest month:", min_value=1, max_value=12, step=1)
-        CURRENCY = st.selectbox("Select the currency amount display:", ["LCC and EUR", "LCC only", "EUR only"])
-
-        run_btn = st.button("🚀 Run Processing")
-
-        if run_btn:
             df = pd.concat(all_dfs, ignore_index=True)
             df["MONTH+1"] = df["MONTH"] + 1
 
