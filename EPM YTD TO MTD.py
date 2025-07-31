@@ -48,7 +48,7 @@ if uploaded_files:
         CLOSING_M = st.number_input("Input the latest month:", min_value=1, max_value=12, step=1)
         CURRENCY = st.selectbox("Select the currency amount display:", ["LCC and EUR", "LCC only", "EUR only"])
 
-        if CLOSING_M and CURRENCY:
+        if CLOSING_M is not None and CURRENCY:
             try:
                 df = pd.concat(all_dfs, ignore_index=True)
 
@@ -70,60 +70,52 @@ if uploaded_files:
                     "InvoiceType", "ContractType", "AmountCurrency", "IntercoType", "ICDetails", "EmployedBy",
                     "AccountType", "Amount", "Amount In EUR", "YEAR", "MONTH+1"
                 ]
+                # First, create the reference DataFrame with next month's aggregated values
+                df_next = df.groupby(columns_id_m1).agg({
+                    "Amount": "sum",
+                    "Amount In EUR": "sum"
+                }).reset_index().rename(columns={
+                "Amount": "Amount_Next",
+                "Amount In EUR": "Amount In EUR_Next"
+                })
 
-                df["LLC AMOUNT"] = df["Amount"]-df[columns_needed].map(df.groupby(columns_id_m+1).["Amount"].sum().fillna(0, inplace=True))                
-                df["EUR AMOUNT"] = df["Amount in EUR"]-df[columns_needed].map(df.groupby(columns_id_m+1).["Amount In EUR"].sum().fillna(0, inplace=True))
-                df = df.drop(columns=["MONTH+1"])
-                # --- EUR Processing ---
-                df_EUR = df.copy()
-                for m in range(1, 13):
-                    df_EUR[str(m)] = 
-                        np.where(df_EUR["MONTH"] == m, df_EUR["Amount In EUR"],
-                        np.where(df_EUR["MONTH"] == m - 1, -df_EUR["Amount In EUR"], 
-                        0)
-                    )
+                # Now merge back to original dataframe
+                df = df.merge(df_next, how="left", on=columns_id_m1).fillna(0)
 
-                df_EUR = df_EUR.melt(
-                    id_vars=[col for col in df_EUR.columns if col not in [str(m) for m in range(1, 13)]],
-                    value_vars=[str(m) for m in range(1, 13)],
-                    var_name="MONTH_NEW_EUR", value_name="EUR AMOUNT"
-                )
-                df_EUR["MONTH_NEW_EUR"] = df_EUR["MONTH_NEW_EUR"].astype(int)
-
-                df_EUR = df_EUR.drop(columns=["MONTH"]).rename(columns={"MONTH_NEW_EUR": "MONTH"})
-
-                group_keys = [col for col in columns_needed if col not in ["Amount", "Amount In EUR"]]
-                df_EUR = df_EUR.groupby(group_keys, dropna=False, as_index=False).agg({"EUR AMOUNT": "sum"})
-                df_EUR = df_EUR[(df_EUR["EUR AMOUNT"] != 0) & (df_EUR["MONTH"] <= CLOSING_M)]                
-
-                # --- LCC Processing ---
-                df_LCC = df.copy()
-                for m in range(1, 13):
-                    df_LCC[str(m)] = np.where(
-                        df_LCC["MONTH"] == m, df_LCC["Amount"],
-                        np.where(df_LCC["MONTH"] == m - 1, -df_LCC["Amount"], 0)
-                    )
-
-                df_LCC = df_LCC.melt(
-                    id_vars=[col for col in df_LCC.columns if col not in [str(m) for m in range(1, 13)]],
-                    value_vars=[str(m) for m in range(1, 13)],
-                    var_name="MONTH_NEW_LCC", value_name="LCC AMOUNT"
-                )
-                df_LCC["MONTH_NEW_LCC"] = df_LCC["MONTH_NEW_LCC"].astype(int)
-                df_LCC = df_LCC.drop(columns=["MONTH"]).rename(columns={"MONTH_NEW_LCC": "MONTH"})
-                df_LCC = df_LCC.groupby(group_keys, dropna=False, as_index=False).agg({"LCC AMOUNT": "sum"})
-                df_LCC = df_LCC[(df_LCC["LCC AMOUNT"] != 0) & (df_LCC["MONTH"] <= CLOSING_M)]
-                
+                # Subtract current month - next month
+                df["LCC AMOUNT"] = df["Amount"] - df["Amount_Next"]
+                df["EUR AMOUNT"] = df["Amount In EUR"] - df["Amount In EUR_Next"]            
+                df = df.drop(columns=["Amount", "Amount In EUR","MONTH+1"])
+                df = df[(df["MONTH"] <= CLOSING_M)]   
+                df = df[~((df["EUR AMOUNT"] == 0) & (df["LCC AMOUNT"] == 0))]
+     
                 # --- Final Output ---
                 if CURRENCY == "LCC only":
-                    df_final = df_LCC
+                    df_final = df[
+                    "Entity", "Cons", "Scenario", "View", "Account Parent", "Account", "Flow", "Origin", "IC",
+                    "FinalClient Group", "FinalClient", "Client", "FinancialManager", "Governance Level",
+                    "Governance", "Commodity", "AuditID", "UD8", "Project", "Employee", "Supplier",
+                    "InvoiceType", "ContractType", "AmountCurrency", "IntercoType", "ICDetails", "EmployedBy",
+                    "AccountType", "LCC AMOUNT", "YEAR", "MONTH"
+                ]
+                    df_final = df_final[~((df_final["LCC AMOUNT"] == 0))]
                 elif CURRENCY == "EUR only":
-                    df_final = df_EUR
-                else:  # "LCC and EUR"
-                    df_final = pd.merge(df_LCC, df_EUR, on=group_keys + ["MONTH"], how="outer")
-                    df_final["LCC AMOUNT"] = df_final["LCC AMOUNT"].fillna(0)
-                    df_final["EUR AMOUNT"] = df_final["EUR AMOUNT"].fillna(0)
-
+                    df_final = df[
+                    "Entity", "Cons", "Scenario", "View", "Account Parent", "Account", "Flow", "Origin", "IC",
+                    "FinalClient Group", "FinalClient", "Client", "FinancialManager", "Governance Level",
+                    "Governance", "Commodity", "AuditID", "UD8", "Project", "Employee", "Supplier",
+                    "InvoiceType", "ContractType", "AmountCurrency", "IntercoType", "ICDetails", "EmployedBy",
+                    "AccountType", "EUR AMOUNT", "YEAR", "MONTH"
+                ]
+                    df_final = df_final[~((df_final["EUR AMOUNT"] == 0))]
+                elif CURRENCY == "LCC and EUR":
+                    df_final = df[
+                    "Entity", "Cons", "Scenario", "View", "Account Parent", "Account", "Flow", "Origin", "IC",
+                    "FinalClient Group", "FinalClient", "Client", "FinancialManager", "Governance Level",
+                    "Governance", "Commodity", "AuditID", "UD8", "Project", "Employee", "Supplier",
+                    "InvoiceType", "ContractType", "AmountCurrency", "IntercoType", "ICDetails", "EmployedBy",
+                    "AccountType", "LCC AMOUNT", "EUR AMOUNT", "YEAR", "MONTH"
+                ]
                 df_final = df_final.sort_values(by=["YEAR", "MONTH"])
 
                 # --- Export ---
