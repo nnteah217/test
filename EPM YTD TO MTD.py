@@ -52,15 +52,14 @@ if uploaded_files:
             try:
                 df = pd.concat(all_dfs, ignore_index=True)
 
-                # Columns we want to retain
-                columns_origin = [
+                columns_key =[
                     "Entity", "Cons", "Scenario", "View", "Account Parent", "Account", "Flow", "Origin", "IC",
                     "FinalClient Group", "FinalClient", "Client", "FinancialManager", "Governance Level",
                     "Governance", "Commodity", "AuditID", "UD8", "Project", "Employee", "Supplier",
                     "InvoiceType", "ContractType", "AmountCurrency", "IntercoType", "ICDetails", "EmployedBy",
-                    "AccountType", "Amount", "Amount In EUR", "YEAR", "MONTH"
+                    "AccountType"
                 ]
-                df = df[columns_origin]
+                
                 df["MONTH+1"]=df["MONTH"]+1
 
                 columns_next =[
@@ -71,13 +70,14 @@ if uploaded_files:
                     "AccountType", "YEAR", "MONTH+1"
                 ]
                 
-                columns_id =[
+                columns_current =[
                     "Entity", "Cons", "Scenario", "View", "Account Parent", "Account", "Flow", "Origin", "IC",
                     "FinalClient Group", "FinalClient", "Client", "FinancialManager", "Governance Level",
                     "Governance", "Commodity", "AuditID", "UD8", "Project", "Employee", "Supplier",
                     "InvoiceType", "ContractType", "AmountCurrency", "IntercoType", "ICDetails", "EmployedBy",
                     "AccountType", "YEAR", "MONTH"
                 ]
+                
                 # First, create the reference DataFrame with next month's aggregated values
                 df_next = df.groupby(columns_next).agg({
                     "Amount": "sum",
@@ -89,7 +89,7 @@ if uploaded_files:
                 })
 
                 # Now merge back to original dataframe
-                df = df.merge(df_next, how="outer", on=columns_id).fillna(0)
+                df = df.merge(df_next, how="outer", on=columns_current).fillna(0)
 
                 # Subtract
                 df["LCC AMOUNT"] = df["Amount"] - df["Amount_Next"]
@@ -99,7 +99,16 @@ if uploaded_files:
                 df = df[(df["MONTH"] <= CLOSING_M)]   
                 df = df[~((df["EUR AMOUNT"] == 0) & (df["LCC AMOUNT"] == 0))]
 
-                df_final = df.sort_values(by=["YEAR", "MONTH"])
+                if CURRENCY == "LCC and EUR":
+                    df_final=df[columns_key] + df["LLC AMOUNT","EUR AMOUNT","YEAR","MONTH"]
+                elif CURRENCY == "LCC only":
+                    df_final=df[columns_key] + df["LLC AMOUNT","YEAR","MONTH"]
+                    df_final = df_final[~((df["LCC AMOUNT"] == 0))]
+                elif CURRENCY == "EUR only":
+                    df_final=df[columns_key] + df["EUR AMOUNT","YEAR","MONTH"]
+                    df_final = df_final[~((df["EUR AMOUNT"] == 0))]                
+
+                df_final = df_final.sort_values(by=["YEAR", "MONTH"])
 
                 # --- Export ---
                 now = datetime.now()
