@@ -25,7 +25,7 @@ CURRENCY = st.selectbox("Select the currency amount:", ["LCC and EUR","LCC only"
 
 for file in uploaded_file_FastClose:
     if file.name.endswith(".xlsx"):
-        match = re.search(r"(\d{4})M(\d+)", file)
+        match = re.search(r"(\d{4})M(\d+)", file.name)
         if match:
             year, month = int(match.group(1)), int(match.group(2))
             df = pd.read_excel(file, skiprows=4,na_values=[], keep_default_na=False).assign(YEAR=year, MONTH=month)
