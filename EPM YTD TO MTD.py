@@ -98,35 +98,8 @@ if uploaded_files:
                 df = df.drop(columns=["Amount", "Amount In EUR","Amount_Next","Amount In EUR_Next","MONTH+1"])
                 df = df[(df["MONTH"] <= CLOSING_M)]   
                 df = df[~((df["EUR AMOUNT"] == 0) & (df["LCC AMOUNT"] == 0))]
-     
-                # --- Final Output ---
-                if CURRENCY == "LCC only":
-                    df_final = df[
-                    "Entity", "Cons", "Scenario", "View", "Account Parent", "Account", "Flow", "Origin", "IC",
-                    "FinalClient Group", "FinalClient", "Client", "FinancialManager", "Governance Level",
-                    "Governance", "Commodity", "AuditID", "UD8", "Project", "Employee", "Supplier",
-                    "InvoiceType", "ContractType", "AmountCurrency", "IntercoType", "ICDetails", "EmployedBy",
-                    "AccountType", "LCC AMOUNT", "YEAR", "MONTH"
-                ]
-                    df_final = df_final[~((df_final["LCC AMOUNT"] == 0))]
-                elif CURRENCY == "EUR only":
-                    df_final = df[
-                    "Entity", "Cons", "Scenario", "View", "Account Parent", "Account", "Flow", "Origin", "IC",
-                    "FinalClient Group", "FinalClient", "Client", "FinancialManager", "Governance Level",
-                    "Governance", "Commodity", "AuditID", "UD8", "Project", "Employee", "Supplier",
-                    "InvoiceType", "ContractType", "AmountCurrency", "IntercoType", "ICDetails", "EmployedBy",
-                    "AccountType", "EUR AMOUNT", "YEAR", "MONTH"
-                ]
-                    df_final = df_final[~((df_final["EUR AMOUNT"] == 0))]
-                elif CURRENCY == "LCC and EUR":
-                    df_final = df[
-                    "Entity", "Cons", "Scenario", "View", "Account Parent", "Account", "Flow", "Origin", "IC",
-                    "FinalClient Group", "FinalClient", "Client", "FinancialManager", "Governance Level",
-                    "Governance", "Commodity", "AuditID", "UD8", "Project", "Employee", "Supplier",
-                    "InvoiceType", "ContractType", "AmountCurrency", "IntercoType", "ICDetails", "EmployedBy",
-                    "AccountType", "LCC AMOUNT", "EUR AMOUNT", "YEAR", "MONTH"
-                ]
-                df_final = df_final.sort_values(by=["YEAR", "MONTH"])
+
+                df_final = df.sort_values(by=["YEAR", "MONTH"])
 
                 # --- Export ---
                 now = datetime.now()
