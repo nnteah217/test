@@ -77,7 +77,7 @@ if uploaded_files:
                 })
 
                 # Now merge back to original dataframe
-                df = df.merge(df_next, how="left", on=columns_id).fillna(0)
+                df = df.merge(df_next, how="outer", on=columns_id).fillna(0)
 
                 df_final = df.sort_values(by=["YEAR", "MONTH"])
 
