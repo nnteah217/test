@@ -115,7 +115,7 @@ if uploaded_files:
                     df_final = df[columns_final].drop(columns=["EUR AMOUNT"])
                     df_final = df_final[~((df["LCC AMOUNT"] == 0))]
                 elif CURRENCY == "EUR only":
-                    df_final = df[columns_final].drop(columns=["LLC AMOUNT"])
+                    df_final = df[columns_final].drop(columns=["LCC AMOUNT"])
                     df_final = df_final[~((df["EUR AMOUNT"] == 0))]                
 
                 df_final = df_final.sort_values(by=["YEAR", "MONTH"])
