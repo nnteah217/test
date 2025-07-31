@@ -14,14 +14,14 @@ def to_excel(df):
     return output.getvalue()
 
 st.title("📁 Upload FASTCLOSE DATA to Convert")
-uploaded_file_FastClose = st.file_uploader("", type=["xlsx"], accept_multiple_files=True)
+uploaded_files_FastClose = st.file_uploader("", type=["xlsx"], accept_multiple_files=True)
 # === 2. Read and combine Excel files ===
 
 all_dfs = []
 invalid_files = []
 
-if uploaded_files:
-    for file in uploaded_files:
+if uploaded_files_FastClose:
+    for file in uploaded_files_FastClose:
         if file.name.endswith(".xlsx"):
             match = re.search(r"(\d{4})M(\d+)", file.name)
             if match:
