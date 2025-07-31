@@ -39,11 +39,16 @@ def to_excel(df):
     return output.getvalue()
 
 # === Streamlit UI ===
-st.title("📂 Upload Excel Files to Convert")
-uploaded_files = st.file_uploader("", type=["xlsx"], accept_multiple_files=True)
-CLOSING_M = st.number_input("Input the latest month:", min_value=1, max_value=12, step=1)
-CURRENCY = st.selectbox("Select the currency amount display:", ["LCC and EUR", "LCC only", "EUR only"])
-run_btn = st.button("🚀 Convert")
+
+col1, col2 = st.columns(2)
+
+with col1:
+    CLOSING_M = st.number_input("Input the latest month:", min_value=1, max_value=12, step=1)
+    CURRENCY = st.selectbox("Select the currency amount display:", ["LCC and EUR", "LCC only", "EUR only"])
+    run_btn = st.button("🚀 Convert")
+with col2:
+    st.title("📂 Upload Excel Files to Convert")
+    uploaded_files = st.file_uploader("", type=["xlsx"], accept_multiple_files=True)
 
 # === Run When Button is Clicked ===
 if run_btn:
@@ -133,7 +138,7 @@ if run_btn:
             "LCC and EUR": "LCCEUR"
         }.get(CURRENCY, "")
 
-        output_filename = f"FASTCLOSE_{currency_code}_MTD{max_month}_{date_str}.xlsx"
+        output_filename = f"MTD{max_month}_{currency_code}_{date_str}.xlsx"
 
         st.success("✅ Processing completed! Click below to download.")
         st.download_button(
