@@ -8,7 +8,7 @@ from io import BytesIO
 
 st.set_page_config(layout="wide")
 
-def to_excel(df,table_name):
+def to_excel(df):
     output = BytesIO()
     with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
         sheet_name ="MTD"
@@ -23,7 +23,7 @@ def to_excel(df,table_name):
 
         # Add an Excel table with filters and style
         worksheet.add_table(0, 0, num_rows, num_cols - 1, {
-            'name': table_name,
+            'name': "MTD",
             'columns': column_settings,
             'style': 'TableStyleMedium9'  # Optional style
         })
@@ -134,7 +134,7 @@ if run_btn:
         st.success("✅ Processing completed! Click below to download.")
         st.download_button(
             label="📥 Download Converted File",
-            data=to_excel(df_final,"MTD"),
+            data=to_excel(df_final),
             file_name=output_filename
         )
     else:
