@@ -43,8 +43,10 @@ def to_excel(df):
 col1, col2 = st.columns(2)
 
 with col1:
-    CLOSING_M = st.number_input(st.header("Input the latest month:"), min_value=1, max_value=12, step=1)
-    CURRENCY = st.selectbox(st.header("Select the currency amount display:"), ["LCC and EUR", "LCC only", "EUR only"])
+    st.header("Input the latest month:")
+    CLOSING_M = st.number_input("Input the latest month:", min_value=1, max_value=12, step=1)
+    st.header("Select the currency amount display:")    
+    CURRENCY = st.selectbox("Select the currency amount display:", ["LCC and EUR", "LCC only", "EUR only"])
     run_btn = st.button("🚀 Convert")
 with col2:
     st.header("📂 Upload Excel Files to Convert")
