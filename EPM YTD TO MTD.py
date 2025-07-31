@@ -50,6 +50,7 @@ if uploaded_files:
 
         if CLOSING_M is not None and CURRENCY:
             def calculation_process():
+                with
                         df = pd.concat(all_dfs, ignore_index=True)
         
                         columns_key =[
@@ -133,7 +134,7 @@ if uploaded_files:
         
                         output_filename = f"FASTCLOSE_{currency_choice}_MTD{max_month}_{date_str}.xlsx"
 
-            return df_final
+                return df_final
                     if st.download_button(
                             label="📥 Download Converted File",
                             data=to_excel(calculation_process()),
