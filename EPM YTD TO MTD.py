@@ -86,6 +86,8 @@ if uploaded_files:
                 df = df.drop(columns=["Amount", "Amount In EUR","MONTH+1"])
                 df = df[(df["MONTH"] <= CLOSING_M)]   
                 df = df[~((df["EUR AMOUNT"] == 0) & (df["LCC AMOUNT"] == 0))]
+
+                df.head()
      
                 # --- Final Output ---
                 if CURRENCY == "LCC only":
