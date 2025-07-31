@@ -61,7 +61,19 @@ if uploaded_files:
                     "AccountType", "Amount", "Amount In EUR", "YEAR", "MONTH"
                 ]
                 df = df[columns_needed]
+                df["MONTH+1"]=df["MONTH"]+1
 
+                columns_id_m1 =[
+                    "Entity", "Cons", "Scenario", "View", "Account Parent", "Account", "Flow", "Origin", "IC",
+                    "FinalClient Group", "FinalClient", "Client", "FinancialManager", "Governance Level",
+                    "Governance", "Commodity", "AuditID", "UD8", "Project", "Employee", "Supplier",
+                    "InvoiceType", "ContractType", "AmountCurrency", "IntercoType", "ICDetails", "EmployedBy",
+                    "AccountType", "Amount", "Amount In EUR", "YEAR", "MONTH+1"
+                ]
+
+                df["LLC AMOUNT"] = df["Amount"]-df[columns_needed].map(df.groupby(columns_id_m+1).["Amount"].sum().fillna(0, inplace=True))                
+                df["EUR AMOUNT"] = df["Amount in EUR"]-df[columns_needed].map(df.groupby(columns_id_m+1).["Amount In EUR"].sum().fillna(0, inplace=True))
+                df = df.drop(columns=["MONTH+1"])
                 # --- EUR Processing ---
                 df_EUR = df.copy()
                 for m in range(1, 13):
