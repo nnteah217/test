@@ -1,6 +1,11 @@
 import pandas as pd
-from io import BytesIO
+import numpy as np
 import streamlit as st
+import os
+import re
+from datetime import datetime
+from io import BytesIO
+
 st.set_page_config(layout="wide")
 def to_excel(df):
     output = BytesIO()
@@ -10,8 +15,31 @@ def to_excel(df):
 
 col1, col2, col3 = st.columns(3)
 with col1:
-    st.title("📁 File M")
-    uploaded_file = st.file_uploader("", type=["xlsx"], key='fileM')
+    st.title("📁 Upload FASTCLOSE DATA to Convert")
+    uploaded_file_FastClose = st.file_uploader("", type=["xlsx"], accept_multiple_files=True)
+# === 2. Read and combine Excel files ===
+all_dfs = []
+
+for file in uploaded_file_FastClose:
+    if file.endswith(".xlsx"):
+        match = re.search(r"(\d{4})M(\d+)", file)
+        if match:
+            year, month = int(match.group(1)), int(match.group(2))
+            df = pd.read_excel(file, skiprows=4,na_values=[], keep_default_na=False).assign(YEAR=year, MONTH=month)
+            all_dfs.append(df)
+# Combine all monthly data
+df = pd.concat(all_dfs, ignore_index=True)
+
+# === 3. Select relevant columns ===
+columns_needed = [
+    "Entity", "Cons", "Scenario", "View", "Account Parent", "Account", "Flow", "Origin", "IC",
+    "FinalClient Group", "FinalClient", "Client", "FinancialManager", "Governance Level",
+    "Governance", "Commodity", "AuditID", "UD8", "Project", "Employee", "Supplier",
+    "InvoiceType", "ContractType", "AmountCurrency", "IntercoType", "ICDetails", "EmployedBy",
+    "AccountType", "Amount", "Amount In EUR", "YEAR", "MONTH"
+]
+df = df[columns_needed]
+
 with col2:
     st.title("📁 File M - 1")
     uploaded_file2 = st.file_uploader("", type=["xlsx"], key='fileM-1')
