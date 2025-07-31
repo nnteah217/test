@@ -50,10 +50,7 @@ if uploaded_files_FastClose:
 
         # Combine data
         df = pd.concat(all_dfs, ignore_index=True)
-    else:
-        st.warning("⚠️ No valid Excel data found. Please upload the correct file(s).")
-else:
-    st.info("📂 Please upload your FastClose Excel files to continue.")
+
 
 # === 3. Select relevant columns ===
 columns_needed = [
@@ -234,4 +231,7 @@ st.download_button(
     data=to_excel(df),
     file_name=output_filename)
 
-
+    else:
+        st.warning("⚠️ No valid Excel data found. Please upload the correct file(s).")
+else:
+    st.info("📂 Please upload your FastClose Excel files to continue.")
