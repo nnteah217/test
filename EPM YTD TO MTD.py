@@ -99,14 +99,23 @@ if uploaded_files:
                 df = df[(df["MONTH"] <= CLOSING_M)]   
                 df = df[~((df["EUR AMOUNT"] == 0) & (df["LCC AMOUNT"] == 0))]
 
+                columns_final =[
+                    "Entity", "Cons", "Scenario", "View", "Account Parent", "Account", "Flow", "Origin", "IC",
+                    "FinalClient Group", "FinalClient", "Client", "FinancialManager", "Governance Level",
+                    "Governance", "Commodity", "AuditID", "UD8", "Project", "Employee", "Supplier",
+                    "InvoiceType", "ContractType", "AmountCurrency", "IntercoType", "ICDetails", "EmployedBy",
+                    "AccountType","LCC AMOUNT","EUR AMOUNT","YEAR","MONTH"
+                ]
+
+                
                 
                 if CURRENCY == "LCC and EUR":
-                    df_final = pd.concat(df[columns_key] , df["LCC AMOUNT","EUR AMOUNT","YEAR","MONTH"],axis = 1)
+                    df_final = df[columns_final]
                 elif CURRENCY == "LCC only":
-                    df_final = pd.concat(df[columns_key] , df["LCC AMOUNT","YEAR","MONTH"],axis = 1)
+                    df_final = df[columns_final].drop(columns=["EUR AMOUNT"])
                     df_final = df_final[~((df["LCC AMOUNT"] == 0))]
                 elif CURRENCY == "EUR only":
-                    df_final = pd.concat(df[columns_key] , df["EUR AMOUNT","YEAR","MONTH"],axis = 1)
+                    df_final = df[columns_final].drop(columns=["LLC AMOUNT"])
                     df_final = df_final[~((df["EUR AMOUNT"] == 0))]                
 
                 df_final = df_final.sort_values(by=["YEAR", "MONTH"])
