@@ -81,7 +81,7 @@ if uploaded_files:
                 })
 
                 # Now merge back to original dataframe
-                df = df.merge(df_next, how="left", on=columns_origin - ["Amount", "Amount In EUR"]).fillna(0)
+                df = df.merge(df_next, how="left", on=[x for x in columns_origin if x not in ["Amount", "Amount In EUR"]]).fillna(0)
 
                 # Subtract current month - next month
                 df["LCC AMOUNT"] = df["Amount"] - df["Amount_Next"]
