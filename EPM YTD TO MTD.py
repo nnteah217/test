@@ -70,6 +70,14 @@ if uploaded_files:
                     "InvoiceType", "ContractType", "AmountCurrency", "IntercoType", "ICDetails", "EmployedBy",
                     "AccountType", "YEAR", "MONTH+1"
                 ]
+                
+                columns_id =[
+                    "Entity", "Cons", "Scenario", "View", "Account Parent", "Account", "Flow", "Origin", "IC",
+                    "FinalClient Group", "FinalClient", "Client", "FinancialManager", "Governance Level",
+                    "Governance", "Commodity", "AuditID", "UD8", "Project", "Employee", "Supplier",
+                    "InvoiceType", "ContractType", "AmountCurrency", "IntercoType", "ICDetails", "EmployedBy",
+                    "AccountType", "YEAR", "MONTH"
+                ]
                 # First, create the reference DataFrame with next month's aggregated values
                 df_next = df.groupby(columns_next).agg({
                     "Amount": "sum",
@@ -81,7 +89,7 @@ if uploaded_files:
                 })
 
                 # Now merge back to original dataframe
-                df = df.merge(df_next, how="left", on=[x for x in columns_origin if x not in ["Amount", "Amount In EUR"]]).fillna(0)
+                df = df.merge(df_next, how="left", on=columns_id).fillna(0)
 
                 # Subtract current month - next month
                 df["LCC AMOUNT"] = df["Amount"] - df["Amount_Next"]
