@@ -76,11 +76,12 @@ if uploaded_files_FastClose:
                     var_name="MONTH_NEW_EUR", value_name="EUR AMOUNT"
                 )
                 df_EUR["MONTH_NEW_EUR"] = df_EUR["MONTH_NEW_EUR"].astype(int)
-                df_EUR = df_EUR[(df_EUR["EUR AMOUNT"] != 0) & (df_EUR["MONTH_NEW_EUR"] <= CLOSING_M)]
+
                 df_EUR = df_EUR.drop(columns=["MONTH"]).rename(columns={"MONTH_NEW_EUR": "MONTH"})
 
                 group_keys = [col for col in columns_needed if col not in ["Amount", "Amount In EUR"]]
                 df_EUR = df_EUR.groupby(group_keys, dropna=False, as_index=False).agg({"EUR AMOUNT": "sum"})
+                df_EUR = df_EUR[(df_EUR["EUR AMOUNT"] != 0) & (df_EUR["MONTH_NEW_EUR"] <= CLOSING_M)]                
 
                 # --- LCC Processing ---
                 df_LCC = df.copy()
@@ -96,10 +97,10 @@ if uploaded_files_FastClose:
                     var_name="MONTH_NEW_LCC", value_name="LCC AMOUNT"
                 )
                 df_LCC["MONTH_NEW_LCC"] = df_LCC["MONTH_NEW_LCC"].astype(int)
-                df_LCC = df_LCC[(df_LCC["LCC AMOUNT"] != 0) & (df_LCC["MONTH_NEW_LCC"] <= CLOSING_M)]
                 df_LCC = df_LCC.drop(columns=["MONTH"]).rename(columns={"MONTH_NEW_LCC": "MONTH"})
                 df_LCC = df_LCC.groupby(group_keys, dropna=False, as_index=False).agg({"LCC AMOUNT": "sum"})
-
+                df_LCC = df_LCC[(df_LCC["LCC AMOUNT"] != 0) & (df_LCC["MONTH_NEW_LCC"] <= CLOSING_M)]
+                
                 # --- Final Output ---
                 if CURRENCY == "LCC only":
                     df_final = df_LCC
