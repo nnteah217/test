@@ -99,10 +99,11 @@ if uploaded_files:
                 df = df[(df["MONTH"] <= CLOSING_M)]   
                 df = df[~((df["EUR AMOUNT"] == 0) & (df["LCC AMOUNT"] == 0))]
 
+                
                 if CURRENCY == "LCC and EUR":
-                    df_final = pd.concat(df[columns_key] , df["LLC AMOUNT","EUR AMOUNT","YEAR","MONTH"],axis = 1)
+                    df_final = pd.concat(df[columns_key] , df["LCC AMOUNT","EUR AMOUNT","YEAR","MONTH"],axis = 1)
                 elif CURRENCY == "LCC only":
-                    df_final = pd.concat(df[columns_key] , df["LLC AMOUNT","YEAR","MONTH"],axis = 1)
+                    df_final = pd.concat(df[columns_key] , df["LCC AMOUNT","YEAR","MONTH"],axis = 1)
                     df_final = df_final[~((df["LCC AMOUNT"] == 0))]
                 elif CURRENCY == "EUR only":
                     df_final = pd.concat(df[columns_key] , df["EUR AMOUNT","YEAR","MONTH"],axis = 1)
