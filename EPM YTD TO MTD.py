@@ -14,7 +14,7 @@ def to_excel(df):
         df.to_excel(writer, index=False)
     return output.getvalue()
 
-st.title("📂 Upload excel DATA to Convert")
+st.title("📂 Upload Excel DATA to Convert")
 uploaded_files = st.file_uploader("", type=["xlsx"], accept_multiple_files=True)
 
 # === 2. Read and combine Excel files ===
@@ -37,112 +37,81 @@ if uploaded_files:
             else:
                 invalid_files.append(f"{file.name} - Filename does not match 'YYYYMx' format")
 
-    # Show error if any file failed
     if invalid_files:
         st.error("Some files could not be processed:")
         for msg in invalid_files:
             st.markdown(f"- {msg}")
 
     if all_dfs:
-        # Input fields after successful upload
         CLOSING_M = st.number_input("Input the latest month:", min_value=1, max_value=12, step=1)
         CURRENCY = st.selectbox("Select the currency amount display:", ["LCC and EUR", "LCC only", "EUR only"])
 
-        if CLOSING_M is not None and CURRENCY:
-            def calculation_process():
-                with
-                        df = pd.concat(all_dfs, ignore_index=True)
-        
-                        columns_key =[
-                            "Entity", "Cons", "Scenario", "View", "Account Parent", "Account", "Flow", "Origin", "IC",
-                            "FinalClient Group", "FinalClient", "Client", "FinancialManager", "Governance Level",
-                            "Governance", "Commodity", "AuditID", "UD8", "Project", "Employee", "Supplier",
-                            "InvoiceType", "ContractType", "AmountCurrency", "IntercoType", "ICDetails", "EmployedBy",
-                            "AccountType"
-                        ]
-                        
-                        df["MONTH+1"]=df["MONTH"]+1
-        
-                        columns_next =[
-                            "Entity", "Cons", "Scenario", "View", "Account Parent", "Account", "Flow", "Origin", "IC",
-                            "FinalClient Group", "FinalClient", "Client", "FinancialManager", "Governance Level",
-                            "Governance", "Commodity", "AuditID", "UD8", "Project", "Employee", "Supplier",
-                            "InvoiceType", "ContractType", "AmountCurrency", "IntercoType", "ICDetails", "EmployedBy",
-                            "AccountType", "YEAR", "MONTH+1"
-                        ]
-                        
-                        columns_current =[
-                            "Entity", "Cons", "Scenario", "View", "Account Parent", "Account", "Flow", "Origin", "IC",
-                            "FinalClient Group", "FinalClient", "Client", "FinancialManager", "Governance Level",
-                            "Governance", "Commodity", "AuditID", "UD8", "Project", "Employee", "Supplier",
-                            "InvoiceType", "ContractType", "AmountCurrency", "IntercoType", "ICDetails", "EmployedBy",
-                            "AccountType", "YEAR", "MONTH"
-                        ]
-                        
-                        # First, create the reference DataFrame with next month's aggregated values
-                        df_next = df.groupby(columns_next).agg({
-                            "Amount": "sum",
-                            "Amount In EUR": "sum"
-                        }).reset_index().rename(columns={
-                        "Amount" : "Amount_Next",
-                        "Amount In EUR": "Amount In EUR_Next",
-                        "MONTH+1" : "MONTH"
-                        })
-        
-                        # Now merge back to original dataframe
-                        df = df.merge(df_next, how="outer", on=columns_current).fillna(0)
-        
-                        # Subtract
-                        df["LCC AMOUNT"] = df["Amount"] - df["Amount_Next"]
-                        df["EUR AMOUNT"] = df["Amount In EUR"] - df["Amount In EUR_Next"]            
-        
-                        df = df.drop(columns=["Amount", "Amount In EUR","Amount_Next","Amount In EUR_Next","MONTH+1"])
-                        df = df[(df["MONTH"] <= CLOSING_M)]   
-                        df = df[~((df["EUR AMOUNT"] == 0) & (df["LCC AMOUNT"] == 0))]
-        
-                        columns_final =[
-                            "Entity", "Cons", "Scenario", "View", "Account Parent", "Account", "Flow", "Origin", "IC",
-                            "FinalClient Group", "FinalClient", "Client", "FinancialManager", "Governance Level",
-                            "Governance", "Commodity", "AuditID", "UD8", "Project", "Employee", "Supplier",
-                            "InvoiceType", "ContractType", "AmountCurrency", "IntercoType", "ICDetails", "EmployedBy",
-                            "AccountType","LCC AMOUNT","EUR AMOUNT","YEAR","MONTH"
-                        ]
-        
-                        
-                        
-                        if CURRENCY == "LCC and EUR":
-                            df_final = df[columns_final]
-                        elif CURRENCY == "LCC only":
-                            df_final = df[columns_final].drop(columns=["EUR AMOUNT"])
-                            df_final = df_final[~((df["LCC AMOUNT"] == 0))]
-                        elif CURRENCY == "EUR only":
-                            df_final = df[columns_final].drop(columns=["LCC AMOUNT"])
-                            df_final = df_final[~((df["EUR AMOUNT"] == 0))]                
-        
-                        df_final = df_final.sort_values(by=["YEAR", "MONTH"])
-        
-                        # --- Export ---
-                        now = datetime.now()
-                        date_str = now.strftime("%y%m%d_%H%M")
-                        max_month = f"{CLOSING_M:02d}"
-        
-                        currency_choice = {
-                            "LCC only": "LCC",
-                            "EUR only": "EUR",
-                            "LCC and EUR": "LCCEUR"
-                        }.get(CURRENCY, "")
-        
-                        output_filename = f"FASTCLOSE_{currency_choice}_MTD{max_month}_{date_str}.xlsx"
+        run_btn = st.button("🚀 Run Processing")
 
-                return df_final
-                    if st.download_button(
-                            label="📥 Download Converted File",
-                            data=to_excel(calculation_process()),
-                            file_name=output_filename
-                    ):
-                        st.success("✅ File successfully generated and downloaded.")
+        if run_btn:
+            df = pd.concat(all_dfs, ignore_index=True)
+            df["MONTH+1"] = df["MONTH"] + 1
 
+            columns_base = [
+                "Entity", "Cons", "Scenario", "View", "Account Parent", "Account", "Flow", "Origin", "IC",
+                "FinalClient Group", "FinalClient", "Client", "FinancialManager", "Governance Level",
+                "Governance", "Commodity", "AuditID", "UD8", "Project", "Employee", "Supplier",
+                "InvoiceType", "ContractType", "AmountCurrency", "IntercoType", "ICDetails", "EmployedBy",
+                "AccountType"
+            ]
+
+            columns_next = columns_base + ["YEAR", "MONTH+1"]
+            columns_current = columns_base + ["YEAR", "MONTH"]
+
+            df_next = df.groupby(columns_next).agg({
+                "Amount": "sum",
+                "Amount In EUR": "sum"
+            }).reset_index().rename(columns={
+                "Amount": "Amount_Next",
+                "Amount In EUR": "Amount In EUR_Next",
+                "MONTH+1": "MONTH"
+            })
+
+            df = df.merge(df_next, how="outer", on=columns_current).fillna(0)
+
+            df["LCC AMOUNT"] = df["Amount"] - df["Amount_Next"]
+            df["EUR AMOUNT"] = df["Amount In EUR"] - df["Amount In EUR_Next"]
+
+            df = df.drop(columns=["Amount", "Amount In EUR", "Amount_Next", "Amount In EUR_Next", "MONTH+1"])
+            df = df[df["MONTH"] <= CLOSING_M]
+            df = df[~((df["EUR AMOUNT"] == 0) & (df["LCC AMOUNT"] == 0))]
+
+            columns_final = columns_base + ["LCC AMOUNT", "EUR AMOUNT", "YEAR", "MONTH"]
+
+            if CURRENCY == "LCC and EUR":
+                df_final = df[columns_final]
+            elif CURRENCY == "LCC only":
+                df_final = df[columns_final].drop(columns=["EUR AMOUNT"])
+                df_final = df_final[df_final["LCC AMOUNT"] != 0]
+            elif CURRENCY == "EUR only":
+                df_final = df[columns_final].drop(columns=["LCC AMOUNT"])
+                df_final = df_final[df_final["EUR AMOUNT"] != 0]
+
+            df_final = df_final.sort_values(by=["YEAR", "MONTH"])
+
+            now = datetime.now()
+            date_str = now.strftime("%y%m%d_%H%M")
+            max_month = f"{CLOSING_M:02d}"
+            currency_code = {
+                "LCC only": "LCC",
+                "EUR only": "EUR",
+                "LCC and EUR": "LCCEUR"
+            }.get(CURRENCY, "")
+
+            output_filename = f"FASTCLOSE_{currency_code}_MTD{max_month}_{date_str}.xlsx"
+
+            st.success("✅ Processing completed! Click below to download.")
+            st.download_button(
+                label="📥 Download Converted File",
+                data=to_excel(df_final),
+                file_name=output_filename
+            )
     else:
-        st.warning("⚠️No valid Excel data found. Please upload the correct file(s).")
+        st.warning("⚠️ No valid Excel data found. Please upload the correct file(s).")
 else:
-    st.info("📂Please upload your FastClose Excel files to continue.")
+    st.info("📂 Please upload your FastClose Excel files to continue.")
