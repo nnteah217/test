@@ -14,7 +14,7 @@ def to_excel(df):
         df.to_excel(writer, index=False)
     return output.getvalue()
 
-st.title("\ud83d\udcc1 Upload FASTCLOSE DATA to Convert")
+st.title("📂 Upload FASTCLOSE DATA to Convert")
 uploaded_files_FastClose = st.file_uploader("", type=["xlsx"], accept_multiple_files=True)
 
 # === 2. Read and combine Excel files ===
@@ -125,7 +125,7 @@ if uploaded_files_FastClose:
 
                 output_filename = f"FASTCLOSE_{currency_choice}_MTD{max_month}_{date_str}.xlsx"
                 st.download_button(
-                    label="\ud83d\udcc5 Download Converted File",
+                    label="📥 Download Converted File",
                     data=to_excel(df_final),
                     file_name=output_filename
                 )
@@ -133,6 +133,6 @@ if uploaded_files_FastClose:
             except Exception as e:
                 st.error(f"Processing failed: {e}")
     else:
-        st.warning("\u26a0\ufe0f No valid Excel data found. Please upload the correct file(s).")
+        st.warning("⚠️No valid Excel data found. Please upload the correct file(s).")
 else:
-    st.info("\ud83d\udcc2 Please upload your FastClose Excel files to continue.")
+    st.info("📂Please upload your FastClose Excel files to continue.")
