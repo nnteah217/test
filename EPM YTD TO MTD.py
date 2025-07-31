@@ -89,65 +89,10 @@ if uploaded_files:
                 })
 
                 # Now merge back to original dataframe
-                df = df.merge(df_next, how="left", on=columns_id).fillna(0)
+                df = df.merge(df,df_next, how="left", on=columns_id).fillna(0)
 
                 # Subtract current month - next month
                 df["LCC AMOUNT"] = df["Amount"] - df["Amount_Next"]
                 df["EUR AMOUNT"] = df["Amount In EUR"] - df["Amount In EUR_Next"]            
-                df = df.drop(columns=["Amount", "Amount In EUR","MONTH+1"])
-                df = df[(df["MONTH"] <= CLOSING_M)]   
-                df = df[~((df["EUR AMOUNT"] == 0) & (df["LCC AMOUNT"] == 0))]
-     
-                # --- Final Output ---
-                if CURRENCY == "LCC only":
-                    df_final = df[
-                    "Entity", "Cons", "Scenario", "View", "Account Parent", "Account", "Flow", "Origin", "IC",
-                    "FinalClient Group", "FinalClient", "Client", "FinancialManager", "Governance Level",
-                    "Governance", "Commodity", "AuditID", "UD8", "Project", "Employee", "Supplier",
-                    "InvoiceType", "ContractType", "AmountCurrency", "IntercoType", "ICDetails", "EmployedBy",
-                    "AccountType", "LCC AMOUNT", "YEAR", "MONTH"
-                ]
-                    df_final = df_final[~((df_final["LCC AMOUNT"] == 0))]
-                elif CURRENCY == "EUR only":
-                    df_final = df[
-                    "Entity", "Cons", "Scenario", "View", "Account Parent", "Account", "Flow", "Origin", "IC",
-                    "FinalClient Group", "FinalClient", "Client", "FinancialManager", "Governance Level",
-                    "Governance", "Commodity", "AuditID", "UD8", "Project", "Employee", "Supplier",
-                    "InvoiceType", "ContractType", "AmountCurrency", "IntercoType", "ICDetails", "EmployedBy",
-                    "AccountType", "EUR AMOUNT", "YEAR", "MONTH"
-                ]
-                    df_final = df_final[~((df_final["EUR AMOUNT"] == 0))]
-                elif CURRENCY == "LCC and EUR":
-                    df_final = df[
-                    "Entity", "Cons", "Scenario", "View", "Account Parent", "Account", "Flow", "Origin", "IC",
-                    "FinalClient Group", "FinalClient", "Client", "FinancialManager", "Governance Level",
-                    "Governance", "Commodity", "AuditID", "UD8", "Project", "Employee", "Supplier",
-                    "InvoiceType", "ContractType", "AmountCurrency", "IntercoType", "ICDetails", "EmployedBy",
-                    "AccountType", "LCC AMOUNT", "EUR AMOUNT", "YEAR", "MONTH"
-                ]
-                df_final = df_final.sort_values(by=["YEAR", "MONTH"])
 
-                # --- Export ---
-                now = datetime.now()
-                date_str = now.strftime("%y%m%d_%H%M")
-                max_month = f"{CLOSING_M:02d}"
 
-                currency_choice = {
-                    "LCC only": "LCC",
-                    "EUR only": "EUR",
-                    "LCC and EUR": "LCCEUR"
-                }.get(CURRENCY, "")
-
-                output_filename = f"FASTCLOSE_{currency_choice}_MTD{max_month}_{date_str}.xlsx"
-                st.download_button(
-                    label="📥 Download Converted File",
-                    data=to_excel(df_final),
-                    file_name=output_filename
-                )
-
-            except Exception as e:
-                st.error(f"Processing failed: {e}")
-    else:
-        st.warning("⚠️No valid Excel data found. Please upload the correct file(s).")
-else:
-    st.info("📂Please upload your FastClose Excel files to continue.")
