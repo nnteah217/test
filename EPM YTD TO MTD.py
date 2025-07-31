@@ -8,10 +8,30 @@ from io import BytesIO
 
 st.set_page_config(layout="wide")
 
-def to_excel(df):
+def to_excel(df,table_name):
     output = BytesIO()
-    with pd.ExcelWriter(output, engine="xlsxwriter") as writer:
-        df.to_excel(writer, index=False)
+    with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+        sheet_name ="MTD"
+        df.to_excel(writer, index=False, sheet_name=sheet_name, startrow=1, header=False)
+
+        workbook  = writer.book
+        worksheet = writer.sheets[sheet_name]
+
+        # Define column settings
+        column_settings = [{'header': col} for col in df.columns]
+        num_rows, num_cols = df.shape
+
+        # Add an Excel table with filters and style
+        worksheet.add_table(0, 0, num_rows, num_cols - 1, {
+            'name': table_name,
+            'columns': column_settings,
+            'style': 'TableStyleMedium9'  # Optional style
+        })
+
+        # Optional: Auto-fit column width
+        for i, width in enumerate(get_col_widths(df)):
+            worksheet.set_column(i, i, width)
+
     return output.getvalue()
 
 # === Streamlit UI ===
@@ -114,7 +134,7 @@ if run_btn:
         st.success("✅ Processing completed! Click below to download.")
         st.download_button(
             label="📥 Download Converted File",
-            data=to_excel(df_final),
+            data=to_excel(df_final,"MTD"),
             file_name=output_filename
         )
     else:
