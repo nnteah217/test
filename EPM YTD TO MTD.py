@@ -43,14 +43,19 @@ def to_excel(df):
 col1, col2 = st.columns(2)
 
 with col1:
-    st.header("Input the latest month:")
-    CLOSING_M = st.number_input("Input the latest month:", min_value=1, max_value=12, step=1)
-    st.header("Select the currency amount display:")    
-    CURRENCY = st.selectbox("Select the currency amount display:", ["LCC and EUR", "LCC only", "EUR only"])
-    run_btn = st.button("🚀 Convert")
-with col2:
+    subcol1, subcol2 = st.columns(2)
+    with subcol1:
     st.header("📂 Upload Excel Files to Convert")
     uploaded_files = st.file_uploader("", type=["xlsx"], accept_multiple_files=True)
+    with subcol2:
+            subsubcol1, subsubcol2 = st.columns(2)
+        with subsubcol1:
+            st.header("Input the latest month:")
+            CLOSING_M = st.number_input("Input the latest month:", min_value=1, max_value=12, step=1)
+        with subsubcol2:
+            st.header("Select the currency amount display:")    
+            CURRENCY = st.selectbox("Select the currency amount display:", ["LCC and EUR", "LCC only", "EUR only"])
+    run_btn = st.button("🚀 Convert")
 
 # === Run When Button is Clicked ===
 if run_btn:
