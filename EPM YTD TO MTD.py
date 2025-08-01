@@ -77,7 +77,7 @@ with col1:
         st.success(f"📄 {len(meta_df)} file(s) uploaded")
         CLOSING_M = len(meta_df)
 
-    if valid_file:
+    if valid_files:
         CURRENCY = st.selectbox("Select currency amount:", ["LCC and EUR", "LCC only", "EUR only"])
         run_btn = st.button("🚀 Convert")
 
