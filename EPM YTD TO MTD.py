@@ -55,6 +55,10 @@ with col1:
     valid_files = True
     if meta_df.empty:
         st.info("📂 Please upload Excel files to begin")
+    else
+        st.success(f"📄 {len(meta_df)} file(s) uploaded")
+    
+    CLOSING_M = len(meta_df)        
         
     if meta_df["YEAR"].nunique() != 1:
         st.warning("⚠️ All files must have the same year")
@@ -73,9 +77,6 @@ with col1:
     if not is_consecutive:
         st.warning("⚠️ Months must be consecutive")
         valid_files = False
-
-    st.success(f"📄 {len(meta_df)} file(s) uploaded")
-    CLOSING_M = len(meta_df)
 
     if valid_files:
         CURRENCY = st.selectbox("Select currency amount:", ["LCC and EUR", "LCC only", "EUR only"])
@@ -160,13 +161,14 @@ if run_btn:
         }[CURRENCY]
 
         output_filename = f"MTD{max_month}_{currency_code}_{date_str}.xlsx"
-
-        st.success("✅ Processing completed! Click below to download.")
-        st.download_button(
-            label="📥 Download Converted File",
-            data=to_excel(df_final),
-            file_name=output_filename,
-            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        )
+        
+        with col1:
+            st.success("✅ Processing completed! Click below to download.")
+            st.download_button(
+                label="📥 Download Converted File",
+                data=to_excel(df_final),
+                file_name=output_filename,
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            )
     else:
         st.warning("⚠️ No valid Excel data found. Please upload the correct file(s).")
