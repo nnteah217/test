@@ -85,12 +85,14 @@ if check_uploaded_files:
         st.warning("⚠️ Months must be consecutive")
 
     st.success(f"📄 {len(uploaded_files)} file(s) uploaded")
+
+if check_uploaded_files:
+    CLOSING_M = st.number_input("Input maximum month:", min_value=1, max_value=len(uploaded_files), step=1, value=min(3, len(uploaded_files)))
+    CURRENCY = st.selectbox("Select currency amount:", ["LCC and EUR", "LCC only", "EUR only"])
+    run_btn = st.button("🚀 Convert")
 else:
     st.info("📂 Please upload Excel files to begin")
-
-    CLOSING_M = len(uploaded_files)
-    CURRENCY = st.selectbox("Select currency amount:",["LCC and EUR", "LCC only", "EUR only"])
-    run_btn = st.button("🚀 Convert")
+    run_btn = False  # Prevents error later
 
 # === Run When Button is Clicked ===
 if run_btn:
