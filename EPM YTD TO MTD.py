@@ -166,7 +166,7 @@ if run_btn:
         with col1:
             st.success("✅ Processing completed! Click below to download.")
             st.download_button(
-                label="📅 Download Converted File",
+                label="📥 Download Converted File",
                 data=to_excel(df_final),
                 file_name=output_filename,
                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
