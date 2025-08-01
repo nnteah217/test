@@ -86,35 +86,35 @@ with col1:
 
 # === Run Conversion ===
 if run_btn:
-    all_dfs = []
-    invalid_files = []
+    with st.spinner("🔄 Processing your files..."):
+        all_dfs = []
+        invalid_files = []
 
-    for file in uploaded_files:
-        match = re.search(r"(\d{4})M(\d+)", file.name)
-        if match:
-            year, month = int(match.group(1)), int(match.group(2))
-            try:
-                df = pd.read_excel(file, skiprows=4, na_values=[], keep_default_na=False)
-                df["YEAR"] = year
-                df["MONTH"] = month
-                all_dfs.append(df)
-            except Exception as e:
-                invalid_files.append(f"{file.name} - Error: {e}")
-        else:
-            invalid_files.append(f"{file.name} - Filename does not match 'YYYYMx' format")
+        for file in uploaded_files:
+            match = re.search(r"(\d{4})M(\d+)", file.name)
+            if match:
+                year, month = int(match.group(1)), int(match.group(2))
+                try:
+                    df = pd.read_excel(file, skiprows=4, na_values=[], keep_default_na=False)
+                    df["YEAR"] = year
+                    df["MONTH"] = month
+                    all_dfs.append(df)
+                except Exception as e:
+                    invalid_files.append(f"{file.name} - Error: {e}")
+            else:
+                invalid_files.append(f"{file.name} - Filename does not match 'YYYYMx' format")
 
-    if invalid_files:
-        st.error("Some files could not be processed:")
-        for msg in invalid_files:
-            st.markdown(f"- {msg}")
+        if invalid_files:
+            st.error("Some files could not be processed:")
+            for msg in invalid_files:
+                st.markdown(f"- {msg}")
 
-    if all_dfs:
-        with st.spinner("🔄 Processing your files..."):
+        if all_dfs:
             start_time = time()
-            
+
             df = pd.concat(all_dfs, ignore_index=True)
             df["MONTH+1"] = df["MONTH"] + 1
-        
+
             columns_base = [
                 "Entity", "Cons", "Scenario", "View", "Account Parent", "Account", "Flow", "Origin", "IC",
                 "FinalClient Group", "FinalClient", "Client", "FinancialManager", "Governance Level",
@@ -124,7 +124,7 @@ if run_btn:
             ]
             columns_next = columns_base + ["YEAR", "MONTH+1"]
             columns_current = columns_base + ["YEAR", "MONTH"]
-        
+
             df_next = df.groupby(columns_next).agg({
                 "Amount": "sum",
                 "Amount In EUR": "sum"
@@ -133,18 +133,18 @@ if run_btn:
                 "Amount In EUR": "Amount In EUR_Next",
                 "MONTH+1": "MONTH"
             })
-        
+
             df = df.merge(df_next, how="outer", on=columns_current).fillna(0)
-        
+
             df["LCC AMOUNT"] = df["Amount"] - df["Amount_Next"]
             df["EUR AMOUNT"] = df["Amount In EUR"] - df["Amount In EUR_Next"]
-        
+
             df = df.drop(columns=["Amount", "Amount In EUR", "Amount_Next", "Amount In EUR_Next", "MONTH+1"])
             df = df[df["MONTH"] <= CLOSING_M]
             df = df[~((df["EUR AMOUNT"] == 0) & (df["LCC AMOUNT"] == 0))]
-        
+
             columns_final = columns_base + ["LCC AMOUNT", "EUR AMOUNT", "YEAR", "MONTH"]
-        
+
             if CURRENCY == "LCC only":
                 df_final = df[columns_final].drop(columns=["EUR AMOUNT"])
                 df_final = df_final[df_final["LCC AMOUNT"] != 0]
@@ -153,9 +153,9 @@ if run_btn:
                 df_final = df_final[df_final["EUR AMOUNT"] != 0]
             else:
                 df_final = df[columns_final]
-        
+
             df_final = df_final.sort_values(by=["YEAR", "MONTH"])
-        
+
             now = datetime.now()
             date_str = now.strftime("%y%m%d_%H%M")
             max_month = f"{CLOSING_M:02d}"
@@ -164,20 +164,19 @@ if run_btn:
                 "EUR only": "EUR",
                 "LCC and EUR": "LCCEUR"
             }[CURRENCY]
-        
+
             output_filename = f"MTD{max_month}_{currency_code}_{date_str}.xlsx"
             excel_data = to_excel(df_final)
-        
-            end_time = time()
-            elapsed_time = end_time - start_time
-        
-        with col1:
-            st.success(f"✅ Processing completed in {elapsed_time:.2f} seconds! Click below to download.")
-            st.download_button(
-                label="📥 Download Converted File",
-                data=excel_data,
-                file_name=output_filename,
-                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-            )
-    else:
-        st.warning("⚠️ No valid Excel data found. Please upload the correct file(s).")
+
+            elapsed_time = time() - start_time
+
+            with col1:
+                st.success(f"✅ Processing completed in {elapsed_time:.2f} seconds! Click below to download.")
+                st.download_button(
+                    label="📅 Download Converted File",
+                    data=excel_data,
+                    file_name=output_filename,
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                )
+        else:
+            st.warning("⚠️ No valid Excel data found. Please upload the correct file(s).")
