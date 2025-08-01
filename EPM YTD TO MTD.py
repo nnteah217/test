@@ -70,10 +70,11 @@ with col1:
         st.success(f"📄 {len(meta_df)} file(s) uploaded")
         CLOSING_M = len(meta_df)
 
-        CURRENCY = st.selectbox("Select currency amount:", ["LCC and EUR", "LCC only", "EUR only"])
-        run_btn = st.button("🚀 Convert")
     else:
         st.info("📂 Please upload Excel files to begin")
+    
+    CURRENCY = st.selectbox("Select currency amount:", ["LCC and EUR", "LCC only", "EUR only"])
+    run_btn = st.button("🚀 Convert")
 
 # === Run Conversion ===
 if run_btn:
