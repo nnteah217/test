@@ -45,7 +45,11 @@ col1, col2 = st.columns(2)
 with col1:
     st.header("📂 Upload Excel Files to Convert")
     uploaded_files = st.file_uploader("", type=["xlsx"], accept_multiple_files=True)
-    st.subheader(f"Number of uploaded files: {len(uploaded_files)}")
+    if uploaded_files:
+        st.success(f"📄 {len(uploaded_files)} file(s) uploaded")
+    else:
+        st.info("📂 Please upload Excel files to begin")
+
     subcol1, subcol2 = st.columns(2)
     with subcol1:
         CLOSING_M = st.number_input("Input maximum month:",min_value=1, max_value=len(uploaded_files), step=1)
