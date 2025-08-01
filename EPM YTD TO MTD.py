@@ -162,12 +162,12 @@ if run_btn:
         }[CURRENCY]
 
         output_filename = f"MTD{max_month}_{currency_code}_{date_str}.xlsx"
-
+        excel_data = to_excel(df_final)
         with col1:
             st.success("✅ Processing completed! Click below to download.")
             st.download_button(
                 label="📥 Download Converted File",
-                data=to_excel(df_final),
+                data=excel_data,
                 file_name=output_filename,
                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
             )
