@@ -3,7 +3,7 @@ import numpy as np
 import streamlit as st
 import os
 import re
-import time from time
+from time import time
 from datetime import datetime
 from io import BytesIO
 
