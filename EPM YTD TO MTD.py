@@ -57,30 +57,31 @@ with col1:
         st.info("📂 Please upload Excel files to begin")
     else:
         st.success(f"📄 {len(meta_df)} file(s) uploaded")
-    
-    CLOSING_M = len(meta_df)        
-        
-    if meta_df["YEAR"].nunique() != 1:
-        st.warning("⚠️ All files must have the same year")
-        valid_files = False
 
-    if meta_df["MONTH"].min() != 1:
-        st.warning("⚠️ Files must start from M1")
-        valid_files = False
+    CLOSING_M = len(meta_df)
 
-    if meta_df["MONTH"].duplicated().any():
-        st.warning("⚠️ Files must have unique months")
-        valid_files = False
+    if not meta_df.empty:
+        if meta_df["YEAR"].nunique() != 1:
+            st.warning("⚠️ All files must have the same year")
+            valid_files = False
 
-    sorted_months = sorted(meta_df["MONTH"])
-    is_consecutive = all((b - a == 1) for a, b in zip(sorted_months[:-1], sorted_months[1:]))
-    if not is_consecutive:
-        st.warning("⚠️ Months must be consecutive")
-        valid_files = False
+        if meta_df["MONTH"].min() != 1:
+            st.warning("⚠️ Files must start from M1")
+            valid_files = False
 
-    if valid_files:
-        CURRENCY = st.selectbox("Select currency amount:", ["LCC and EUR", "LCC only", "EUR only"])
-        run_btn = st.button("🚀 Convert")
+        if meta_df["MONTH"].duplicated().any():
+            st.warning("⚠️ Files must have unique months")
+            valid_files = False
+
+        sorted_months = sorted(meta_df["MONTH"])
+        is_consecutive = all((b - a == 1) for a, b in zip(sorted_months[:-1], sorted_months[1:]))
+        if not is_consecutive:
+            st.warning("⚠️ Months must be consecutive")
+            valid_files = False
+
+        if valid_files:
+            CURRENCY = st.selectbox("Select currency amount:", ["LCC and EUR", "LCC only", "EUR only"])
+            run_btn = st.button("🚀 Convert")
 
 # === Run Conversion ===
 if run_btn:
@@ -161,11 +162,11 @@ if run_btn:
         }[CURRENCY]
 
         output_filename = f"MTD{max_month}_{currency_code}_{date_str}.xlsx"
-        
+
         with col1:
             st.success("✅ Processing completed! Click below to download.")
             st.download_button(
-                label="📥 Download Converted File",
+                label="📅 Download Converted File",
                 data=to_excel(df_final),
                 file_name=output_filename,
                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
