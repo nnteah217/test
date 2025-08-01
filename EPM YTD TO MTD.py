@@ -86,7 +86,7 @@ with col1:
 
 # === Run Conversion ===
 if run_btn:
-    with st.spinner("🔄 Processing your files..."):
+    with st.spinner("The file is being cooked..."):
         all_dfs = []
         invalid_files = []
 
@@ -173,7 +173,7 @@ if run_btn:
             with col1:
                 st.success(f"✅ Processing completed in {elapsed_time:.2f} seconds! Click below to download.")
                 st.download_button(
-                    label="📅 Download Converted File",
+                    label="📥 Download Converted File",
                     data=excel_data,
                     file_name=output_filename,
                     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
