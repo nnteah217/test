@@ -52,29 +52,34 @@ with col1:
     meta_df = pd.DataFrame(check_uploaded_files) if check_uploaded_files else pd.DataFrame()
 
     run_btn = False
-    if not meta_df.empty:
+    valid_files = True
+    if meta_df.empty:
+        st.info("📂 Please upload Excel files to begin")
+        
         if meta_df["YEAR"].nunique() != 1:
             st.warning("⚠️ All files must have the same year")
+            valid_files = False
 
         if meta_df["MONTH"].min() != 1:
             st.warning("⚠️ Files must start from M1")
+            valid_files = False
 
         if meta_df["MONTH"].duplicated().any():
             st.warning("⚠️ Files must have unique months")
+            valid_files = False
 
         sorted_months = sorted(meta_df["MONTH"])
         is_consecutive = all((b - a == 1) for a, b in zip(sorted_months[:-1], sorted_months[1:]))
         if not is_consecutive:
             st.warning("⚠️ Months must be consecutive")
+            valid_files = False
 
         st.success(f"📄 {len(meta_df)} file(s) uploaded")
         CLOSING_M = len(meta_df)
 
-    else:
-        st.info("📂 Please upload Excel files to begin")
-    
-    CURRENCY = st.selectbox("Select currency amount:", ["LCC and EUR", "LCC only", "EUR only"])
-    run_btn = st.button("🚀 Convert")
+    if valid_file:
+        CURRENCY = st.selectbox("Select currency amount:", ["LCC and EUR", "LCC only", "EUR only"])
+        run_btn = st.button("🚀 Convert")
 
 # === Run Conversion ===
 if run_btn:
