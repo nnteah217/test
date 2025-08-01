@@ -3,6 +3,7 @@ import numpy as np
 import streamlit as st
 import os
 import re
+import time from time
 from datetime import datetime
 from io import BytesIO
 
@@ -108,63 +109,70 @@ if run_btn:
             st.markdown(f"- {msg}")
 
     if all_dfs:
-        df = pd.concat(all_dfs, ignore_index=True)
-        df["MONTH+1"] = df["MONTH"] + 1
-
-        columns_base = [
-            "Entity", "Cons", "Scenario", "View", "Account Parent", "Account", "Flow", "Origin", "IC",
-            "FinalClient Group", "FinalClient", "Client", "FinancialManager", "Governance Level",
-            "Governance", "Commodity", "AuditID", "UD8", "Project", "Employee", "Supplier",
-            "InvoiceType", "ContractType", "AmountCurrency", "IntercoType", "ICDetails", "EmployedBy",
-            "AccountType"
-        ]
-        columns_next = columns_base + ["YEAR", "MONTH+1"]
-        columns_current = columns_base + ["YEAR", "MONTH"]
-
-        df_next = df.groupby(columns_next).agg({
-            "Amount": "sum",
-            "Amount In EUR": "sum"
-        }).reset_index().rename(columns={
-            "Amount": "Amount_Next",
-            "Amount In EUR": "Amount In EUR_Next",
-            "MONTH+1": "MONTH"
-        })
-
-        df = df.merge(df_next, how="outer", on=columns_current).fillna(0)
-
-        df["LCC AMOUNT"] = df["Amount"] - df["Amount_Next"]
-        df["EUR AMOUNT"] = df["Amount In EUR"] - df["Amount In EUR_Next"]
-
-        df = df.drop(columns=["Amount", "Amount In EUR", "Amount_Next", "Amount In EUR_Next", "MONTH+1"])
-        df = df[df["MONTH"] <= CLOSING_M]
-        df = df[~((df["EUR AMOUNT"] == 0) & (df["LCC AMOUNT"] == 0))]
-
-        columns_final = columns_base + ["LCC AMOUNT", "EUR AMOUNT", "YEAR", "MONTH"]
-
-        if CURRENCY == "LCC only":
-            df_final = df[columns_final].drop(columns=["EUR AMOUNT"])
-            df_final = df_final[df_final["LCC AMOUNT"] != 0]
-        elif CURRENCY == "EUR only":
-            df_final = df[columns_final].drop(columns=["LCC AMOUNT"])
-            df_final = df_final[df_final["EUR AMOUNT"] != 0]
-        else:
-            df_final = df[columns_final]
-
-        df_final = df_final.sort_values(by=["YEAR", "MONTH"])
-
-        now = datetime.now()
-        date_str = now.strftime("%y%m%d_%H%M")
-        max_month = f"{CLOSING_M:02d}"
-        currency_code = {
-            "LCC only": "LCC",
-            "EUR only": "EUR",
-            "LCC and EUR": "LCCEUR"
-        }[CURRENCY]
-
-        output_filename = f"MTD{max_month}_{currency_code}_{date_str}.xlsx"
-        excel_data = to_excel(df_final)
+        with st.spinner("🔄 Processing your files..."):
+            start_time = time()
+            
+            df = pd.concat(all_dfs, ignore_index=True)
+            df["MONTH+1"] = df["MONTH"] + 1
+        
+            columns_base = [
+                "Entity", "Cons", "Scenario", "View", "Account Parent", "Account", "Flow", "Origin", "IC",
+                "FinalClient Group", "FinalClient", "Client", "FinancialManager", "Governance Level",
+                "Governance", "Commodity", "AuditID", "UD8", "Project", "Employee", "Supplier",
+                "InvoiceType", "ContractType", "AmountCurrency", "IntercoType", "ICDetails", "EmployedBy",
+                "AccountType"
+            ]
+            columns_next = columns_base + ["YEAR", "MONTH+1"]
+            columns_current = columns_base + ["YEAR", "MONTH"]
+        
+            df_next = df.groupby(columns_next).agg({
+                "Amount": "sum",
+                "Amount In EUR": "sum"
+            }).reset_index().rename(columns={
+                "Amount": "Amount_Next",
+                "Amount In EUR": "Amount In EUR_Next",
+                "MONTH+1": "MONTH"
+            })
+        
+            df = df.merge(df_next, how="outer", on=columns_current).fillna(0)
+        
+            df["LCC AMOUNT"] = df["Amount"] - df["Amount_Next"]
+            df["EUR AMOUNT"] = df["Amount In EUR"] - df["Amount In EUR_Next"]
+        
+            df = df.drop(columns=["Amount", "Amount In EUR", "Amount_Next", "Amount In EUR_Next", "MONTH+1"])
+            df = df[df["MONTH"] <= CLOSING_M]
+            df = df[~((df["EUR AMOUNT"] == 0) & (df["LCC AMOUNT"] == 0))]
+        
+            columns_final = columns_base + ["LCC AMOUNT", "EUR AMOUNT", "YEAR", "MONTH"]
+        
+            if CURRENCY == "LCC only":
+                df_final = df[columns_final].drop(columns=["EUR AMOUNT"])
+                df_final = df_final[df_final["LCC AMOUNT"] != 0]
+            elif CURRENCY == "EUR only":
+                df_final = df[columns_final].drop(columns=["LCC AMOUNT"])
+                df_final = df_final[df_final["EUR AMOUNT"] != 0]
+            else:
+                df_final = df[columns_final]
+        
+            df_final = df_final.sort_values(by=["YEAR", "MONTH"])
+        
+            now = datetime.now()
+            date_str = now.strftime("%y%m%d_%H%M")
+            max_month = f"{CLOSING_M:02d}"
+            currency_code = {
+                "LCC only": "LCC",
+                "EUR only": "EUR",
+                "LCC and EUR": "LCCEUR"
+            }[CURRENCY]
+        
+            output_filename = f"MTD{max_month}_{currency_code}_{date_str}.xlsx"
+            excel_data = to_excel(df_final)
+        
+            end_time = time()
+            elapsed_time = end_time - start_time
+        
         with col1:
-            st.success("✅ Processing completed! Click below to download.")
+            st.success(f"✅ Processing completed in {elapsed_time:.2f} seconds! Click below to download.")
             st.download_button(
                 label="📥 Download Converted File",
                 data=excel_data,
