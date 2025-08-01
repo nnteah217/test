@@ -55,7 +55,7 @@ with col1:
     valid_files = True
     if meta_df.empty:
         st.info("📂 Please upload Excel files to begin")
-    else
+    else:
         st.success(f"📄 {len(meta_df)} file(s) uploaded")
     
     CLOSING_M = len(meta_df)        
