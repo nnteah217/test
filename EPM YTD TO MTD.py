@@ -52,7 +52,7 @@ with col1:
 
     subcol1, subcol2 = st.columns(2)
     with subcol1:
-        CLOSING_M = st.number_input("Input maximum month:",min_value=1, max_value=len(uploaded_files),value=len(uploaded_files), step=1)
+        CLOSING_M = st.number_input("Input maximum month:",min_value=1, max_value=len(uploaded_files),value=0, step=1)
     with subcol2:  
         CURRENCY = st.selectbox("Select currency amount:",["LCC and EUR", "LCC only", "EUR only"])
     run_btn = st.button("🚀 Convert")
