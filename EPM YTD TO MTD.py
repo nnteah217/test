@@ -152,7 +152,7 @@ if run_btn:
             label="📥 Download Converted File",
             data=to_excel(df_final),
             file_name=output_filename,
-            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
     else:
         st.warning("⚠️ No valid Excel data found. Please upload the correct file(s).")
