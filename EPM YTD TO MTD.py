@@ -45,10 +45,48 @@ col1, col2 = st.columns(2)
 with col1:
     st.header("📂 Upload Excel Files to Convert")
     uploaded_files = st.file_uploader("", type=["xlsx"], accept_multiple_files=True)
-    if uploaded_files:
-        st.success(f"📄 {len(uploaded_files)} file(s) uploaded")
-    else:
-        st.info("📂 Please upload Excel files to begin")
+
+check_uploaded_files = []
+
+# Extract metadata
+for file in uploaded_files:
+    if file.name.endswith(".xlsx"):
+        match = re.search(r"(\d{4})M(\d+)", file.name)
+        if match:
+            year = int(match.group(1))
+            month = int(match.group(2))
+            # Append metadata to list
+            check_uploaded_files.append({
+                "File": file.name,
+                "YEAR": year,
+                "MONTH": month
+            })
+
+# Convert to DataFrame
+if check_uploaded_files:
+    meta_df = pd.DataFrame(check_uploaded_files)
+
+    # Check 1: All same year
+    if meta_df["YEAR"].nunique() != 1:
+        st.warning("⚠️ All files must have the same year")
+
+    # Check 2: Start from M1
+    if meta_df["MONTH"].min() != 1:
+        st.warning("⚠️ Files must start from M1")
+
+    # Check 3: No duplicates
+    if meta_df["MONTH"].duplicated().any():
+        st.warning("⚠️ Files must have unique months")
+
+    # Check 4: Consecutive months
+    sorted_months = sorted(meta_df["MONTH"])
+    is_consecutive = all((b - a == 1) for a, b in zip(sorted_months[:-1], sorted_months[1:]))
+    if not is_consecutive:
+        st.warning("⚠️ Months must be consecutive")
+
+    st.success(f"📄 {len(uploaded_files)} file(s) uploaded")
+else:
+    st.info("📂 Please upload Excel files to begin")
 
     CLOSING_M = len(uploaded_files)
     CURRENCY = st.selectbox("Select currency amount:",["LCC and EUR", "LCC only", "EUR only"])
