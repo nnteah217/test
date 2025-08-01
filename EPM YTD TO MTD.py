@@ -86,6 +86,7 @@ with col1:
 
 # === Run Conversion ===
 if run_btn:
+    start_time = time()
     with st.spinner("The file is being cooked..."):
         all_dfs = []
         invalid_files = []
@@ -110,7 +111,7 @@ if run_btn:
                 st.markdown(f"- {msg}")
 
         if all_dfs:
-            start_time = time()
+
 
             df = pd.concat(all_dfs, ignore_index=True)
             df["MONTH+1"] = df["MONTH"] + 1
