@@ -64,7 +64,7 @@ with col1:
     check_uploaded_files = pd.DataFrame(check_uploaded_files)
     check_uploaded_files["CONSECUTIVE"] = False
     # Loop through each row to determine consecutiveness
-    for i, row in df.iterrows():
+    for i, row in check_uploaded_files.iterrows():
         year = row["YEAR"]
         month = row["MONTH"]
     
@@ -73,15 +73,15 @@ with col1:
             continue
     
         if month == 1:
-            df.at[i, "CONSECUTIVE"] = True
+            check_uploaded_files.at[i, "CONSECUTIVE"] = True
         else:
             prev_month = month - 1
             next_month = month + 1
     
-            same_year_months = df[df["YEAR"] == year]["MONTH"].tolist()
+            same_year_months = check_uploaded_files[check_uploaded_files["YEAR"] == year]["MONTH"].tolist()
     
             if prev_month in same_year_months or next_month in same_year_months:
-                df.at[i, "CONSECUTIVE"] = True
+                check_uploaded_files.at[i, "CONSECUTIVE"] = True
 
     meta_df = check_uploaded_files if check_uploaded_files else pd.DataFrame()
 
