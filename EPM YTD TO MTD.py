@@ -93,7 +93,7 @@ with col1:
     CLOSING_M = len(check_uploaded_files)
 
     if not check_uploaded_files.empty:
-        if any(not item["VALID"] for item in check_uploaded_files):
+        if (~check_uploaded_files["VALID"]).any():
             st.warning("⚠️ All files must have [yyyy]M[mm] in the name")
             valid_files = False
         
@@ -109,7 +109,7 @@ with col1:
             st.warning("⚠️ Files must have unique months")
             valid_files = False
 
-        if any(not item["CONSECUTIVE"] for item in check_uploaded_files):
+        if (~check_uploaded_files["CONSECUTIVE"]).any():
             st.warning("⚠️ Months within a year must be consecutive")
             valid_files = False
 
