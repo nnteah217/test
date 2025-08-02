@@ -62,7 +62,7 @@ with col1:
             })
 
     check_uploaded_files = pd.DataFrame(check_uploaded_files)
-    df["CONSECUTIVE"] = False
+    check_uploaded_files["CONSECUTIVE"] = False
     # Loop through each row to determine consecutiveness
     for i, row in df.iterrows():
         year = row["YEAR"]
