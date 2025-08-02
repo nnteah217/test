@@ -1,11 +1,11 @@
 import pandas as pd
 import numpy as np
 import streamlit as st
+import os
 import re
 from time import time
 from datetime import datetime
 from io import BytesIO
-from concurrent.futures import ThreadPoolExecutor
 
 st.set_page_config(layout="wide")
 
@@ -20,11 +20,12 @@ def to_excel(df):
 
         workbook = writer.book
         worksheet = writer.sheets[sheet_name]
+
         column_settings = [{'header': col} for col in df.columns]
         num_rows, num_cols = df.shape
 
         worksheet.add_table(0, 0, num_rows, num_cols - 1, {
-            'name': sheet_name,
+            'name': "MTD",
             'columns': column_settings,
             'style': 'TableStyleLight8'
         })
@@ -34,44 +35,44 @@ def to_excel(df):
 
     return output.getvalue()
 
-def parse_file(file, pattern):
-    match = pattern.search(file.name)
-    if not match:
-        return None
-    year, month = int(match.group(1)), int(match.group(2))
-    df = pd.read_excel(file, engine="openpyxl", header=4, na_values=[], keep_default_na=False)
-    df["YEAR"] = year
-    df["MONTH"] = month
-    return df
-
-# === UI Section ===
+# === Streamlit UI ===
 col1, col2 = st.columns(2)
 
 with col1:
     st.title("EPM Monthly Display Converter")
     uploaded_files = st.file_uploader("", type=["xlsx"], accept_multiple_files=True)
-    pattern = re.compile(r"(\d{4})M(\d+)")
-    check_uploaded_files = [
-        {
+
+    check_uploaded_files = []
+
+    for file in uploaded_files:
+        match = re.search(r"(\d{4})M(\d+)", file.name)
+        check_uploaded_files.append({
             "File": file.name,
-            "YEAR": int(m.group(1)) if (m := pattern.search(file.name)) else None,
-            "MONTH": int(m.group(2)) if m else None,
-            "VALID": bool(m)
-        } for file in uploaded_files
-    ]
+            "YEAR": int(match.group(1)) if match else None,
+            "MONTH": int(match.group(2)) if match else None,
+            "VALID": bool(match)
+        })
 
     check_uploaded_files = pd.DataFrame(check_uploaded_files)
     check_uploaded_files["CONSECUTIVE"] = False
-
+    # Loop through each row to determine consecutiveness
     for i, row in check_uploaded_files.iterrows():
-        year, month = row["YEAR"], row["MONTH"]
+        year = row["YEAR"]
+        month = row["MONTH"]
+    
+        # Skip rows with invalid or missing data
         if pd.isna(year) or pd.isna(month):
             continue
+    
         if month == 1:
             check_uploaded_files.at[i, "CONSECUTIVE"] = True
         else:
-            months = check_uploaded_files[check_uploaded_files["YEAR"] == year]["MONTH"].tolist()
-            if month - 1 in months or month + 1 in months:
+            prev_month = month - 1
+            next_month = month + 1
+    
+            same_year_months = check_uploaded_files[check_uploaded_files["YEAR"] == year]["MONTH"].tolist()
+    
+            if prev_month in same_year_months or next_month in same_year_months:
                 check_uploaded_files.at[i, "CONSECUTIVE"] = True
 
     if check_uploaded_files.empty:
@@ -87,34 +88,48 @@ with col1:
         if (~check_uploaded_files["VALID"]).any():
             st.warning("⚠️ All files must have [yyyy]M[mm] in the name")
             valid_files = False
+        
         if check_uploaded_files["YEAR"].nunique() != 1:
             st.warning("⚠️ All files must have the same year")
             valid_files = False
+
         if check_uploaded_files["MONTH"].min() != 1:
             st.warning("⚠️ Files must start from M1")
             valid_files = False
+
         if check_uploaded_files["MONTH"].duplicated().any():
             st.warning("⚠️ Files must have unique months")
             valid_files = False
+
         if (~check_uploaded_files["CONSECUTIVE"]).any():
             st.warning("⚠️ Months within a year must be consecutive")
             valid_files = False
 
-        if not valid_files:
+        if valid_files == False:
             st.dataframe(check_uploaded_files)
-
+        
         if valid_files:
             CURRENCY = st.selectbox("Select currency amount:", ["LCC and EUR", "LCC only", "EUR only"])
-            run_btn = st.button("\U0001F680 Convert")
+            run_btn = st.button("🚀 Convert")
 
+# === Run Conversion ===
 if run_btn:
     with st.spinner("The file is being cooked..."):
         start_time = time()
-        with ThreadPoolExecutor() as executor:
-            results = list(executor.map(lambda f: parse_file(f, pattern), uploaded_files))
+        all_dfs = []
 
-        all_dfs = [r for r in results if r is not None]
+        for file in uploaded_files:
+            match = re.search(r"(\d{4})M(\d+)", file.name)
+            if match:
+                year, month = int(match.group(1)), int(match.group(2))
+                df = pd.read_excel(file, engine="openpyxl", header=4, na_values=[], keep_default_na=False)
+                df["YEAR"] = year
+                df["MONTH"] = month
+                all_dfs.append(df)
+
         df = pd.concat(all_dfs, ignore_index=True)
+        elapsed_time = time() - start_time
+        
         df["MONTH+1"] = df["MONTH"] + 1
 
         columns_base = [
@@ -124,7 +139,6 @@ if run_btn:
             "InvoiceType", "ContractType", "AmountCurrency", "IntercoType", "ICDetails", "EmployedBy",
             "AccountType"
         ]
-
         columns_next = columns_base + ["YEAR", "MONTH+1"]
         columns_current = columns_base + ["YEAR", "MONTH"]
 
@@ -142,7 +156,7 @@ if run_btn:
         df["LCC AMOUNT"] = df["Amount"] - df["Amount_Next"]
         df["EUR AMOUNT"] = df["Amount In EUR"] - df["Amount In EUR_Next"]
 
-        df.drop(columns=["Amount", "Amount In EUR", "Amount_Next", "Amount In EUR_Next", "MONTH+1"], inplace=True)
+        df = df.drop(columns=["Amount", "Amount In EUR", "Amount_Next", "Amount In EUR_Next", "MONTH+1"])
         df = df[df["MONTH"] <= CLOSING_M]
         df = df[~((df["EUR AMOUNT"] == 0) & (df["LCC AMOUNT"] == 0))]
 
@@ -171,13 +185,14 @@ if run_btn:
         output_filename = f"MTD{max_month}_{currency_code}_{date_str}.xlsx"
         excel_data = to_excel(df_final)
 
-        elapsed_time = time() - start_time
+
 
         with col1:
             st.success(f"✅ Processing completed in {elapsed_time:.2f} seconds! Click below to download.")
             st.download_button(
-                label="📥 Download Converted File",
-                data=excel_data,
-                file_name=output_filename,
-                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                    label="📥 Download Converted File",
+                    data=excel_data,
+                    file_name=output_filename,
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
             )
+
