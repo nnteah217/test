@@ -43,25 +43,40 @@ with col1:
     uploaded_files = st.file_uploader("", type=["xlsx"], accept_multiple_files=True)
 
     check_uploaded_files = []
+
     for file in uploaded_files:
         match = re.search(r"(\d{4})M(\d+)", file.name)
         if match:
-            year = int(match.group(1))
-            month = int(match.group(2))
-            check_uploaded_files.append({"File": file.name, "YEAR": year, "MONTH": month})
+            check_uploaded_files.append({
+                "File": file.name,
+                "YEAR": int(match.group(1)),
+                "MONTH": int(match.group(2)),
+                "VALID": True
+            })
+        else:
+            check_uploaded_files.append({
+                "File": file.name,
+                "YEAR": None,
+                "MONTH": None,
+                "VALID": False
+            })       
 
     meta_df = pd.DataFrame(check_uploaded_files) if check_uploaded_files else pd.DataFrame()
 
-    run_btn = False
-    valid_files = True
     if meta_df.empty:
         st.info("📂 Please upload Excel files to begin")
     else:
         st.success(f"📄 {len(meta_df)} file(s) uploaded")
 
+    run_btn = False
+    valid_files = True
     CLOSING_M = len(meta_df)
 
     if not meta_df.empty:
+        if any(not item["VALID"] for item in check_uploaded_files):
+            st.warning("⚠️ All files must have [yyyy]M[mm] in the name")
+            valid_files = False
+        
         if meta_df["YEAR"].nunique() != 1:
             st.warning("⚠️ All files must have the same year")
             valid_files = False
@@ -89,30 +104,17 @@ if run_btn:
     start_time = time()
     with st.spinner("The file is being cooked..."):
         all_dfs = []
-        invalid_files = []
 
         for file in uploaded_files:
             match = re.search(r"(\d{4})M(\d+)", file.name)
             if match:
                 year, month = int(match.group(1)), int(match.group(2))
-                try:
-                    df = pd.read_excel(file, skiprows=4, na_values=[], keep_default_na=False)
-                    df["YEAR"] = year
-                    df["MONTH"] = month
-                    all_dfs.append(df)
-                except Exception as e:
-                    invalid_files.append(f"{file.name} - Error: {e}")
-            else:
-                invalid_files.append(f"{file.name} - Filename does not match 'YYYYMx' format")
-
-        if invalid_files:
-            st.error("Some files could not be processed:")
-            for msg in invalid_files:
-                st.markdown(f"- {msg}")
+                df = pd.read_excel(file, skiprows=4, na_values=[], keep_default_na=False)
+                df["YEAR"] = year
+                df["MONTH"] = month
+                all_dfs.append(df)
 
         if all_dfs:
-
-
             df = pd.concat(all_dfs, ignore_index=True)
             df["MONTH+1"] = df["MONTH"] + 1
 
@@ -179,5 +181,3 @@ if run_btn:
                     file_name=output_filename,
                     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                 )
-        else:
-            st.warning("⚠️ No valid Excel data found. Please upload the correct file(s).")
