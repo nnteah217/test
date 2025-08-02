@@ -62,6 +62,26 @@ with col1:
             })
 
     check_uploaded_files = pd.DataFrame(check_uploaded_files)
+    df["CONSECUTIVE"] = False
+    # Loop through each row to determine consecutiveness
+    for i, row in df.iterrows():
+        year = row["YEAR"]
+        month = row["MONTH"]
+    
+        # Skip rows with invalid or missing data
+        if pd.isna(year) or pd.isna(month):
+            continue
+    
+        if month == 1:
+            df.at[i, "CONSECUTIVE"] = True
+        else:
+            prev_month = month - 1
+            next_month = month + 1
+    
+            same_year_months = df[df["YEAR"] == year]["MONTH"].tolist()
+    
+            if prev_month in same_year_months or next_month in same_year_months:
+                df.at[i, "CONSECUTIVE"] = True
 
     meta_df = check_uploaded_files if check_uploaded_files else pd.DataFrame()
 
@@ -75,7 +95,7 @@ with col1:
     CLOSING_M = len(meta_df)
 
     if not meta_df.empty:
-        if any(not item["VALID"] for item in check_uploaded_files):
+        if any(not item["VALID"] for item in meta_df):
             st.warning("⚠️ All files must have [yyyy]M[mm] in the name")
             valid_files = False
         
@@ -91,10 +111,8 @@ with col1:
             st.warning("⚠️ Files must have unique months")
             valid_files = False
 
-        sorted_months = sorted(meta_df["MONTH"])
-        is_consecutive = all((b - a == 1) for a, b in zip(sorted_months[:-1], sorted_months[1:]))
-        if not is_consecutive:
-            st.warning("⚠️ Months must be consecutive")
+        if any(not item["CONSECUTIVE"] for item in meta_df):
+            st.warning("⚠️ Months within a year must be consecutive")
             valid_files = False
 
         if valid_files:
