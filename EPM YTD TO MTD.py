@@ -51,17 +51,19 @@ with col1:
                 "File": file.name,
                 "YEAR": int(match.group(1)),
                 "MONTH": int(match.group(2)),
-                "VALID": True
+                "VALID": True             
             })
         else:
             check_uploaded_files.append({
                 "File": file.name,
                 "YEAR": None,
                 "MONTH": None,
-                "VALID": False
-            })       
+                "VALID": False                
+            })
 
-    meta_df = pd.DataFrame(check_uploaded_files) if check_uploaded_files else pd.DataFrame()
+    check_uploaded_files = pd.DataFrame(check_uploaded_files)
+
+    meta_df = check_uploaded_files if check_uploaded_files else pd.DataFrame()
 
     if meta_df.empty:
         st.info("📂 Please upload Excel files to begin")
