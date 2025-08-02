@@ -113,7 +113,7 @@ with col1:
             st.warning("⚠️ Months within a year must be consecutive")
             valid_files = False
 
-        if valid_files = False:
+        if valid_files == False:
             st.dataframe(check_uploaded_files)
         
         if valid_files:
