@@ -193,11 +193,11 @@ if run_btn:
 
         elapsed_time = time() - start_time
 
-with col1:
-    st.success(f"✅ Processing completed in {elapsed_time:.2f} seconds! Click below to download.")
-    st.download_button(
-            label="📥 Download Converted File",
-            data=excel_data,
-            file_name=output_filename,
-            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    )
+        with col1:
+            st.success(f"✅ Processing completed in {elapsed_time:.2f} seconds! Click below to download.")
+            st.download_button(
+                    label="📥 Download Converted File",
+                    data=excel_data,
+                    file_name=output_filename,
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            )
