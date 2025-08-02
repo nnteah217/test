@@ -83,35 +83,33 @@ with col1:
             if prev_month in same_year_months or next_month in same_year_months:
                 check_uploaded_files.at[i, "CONSECUTIVE"] = True
 
-    meta_df = check_uploaded_files if check_uploaded_files else pd.DataFrame()
-
-    if meta_df.empty:
+    if check_uploaded_files.empty:
         st.info("📂 Please upload Excel files to begin")
     else:
-        st.success(f"📄 {len(meta_df)} file(s) uploaded")
+        st.success(f"📄 {len(check_uploaded_files)} file(s) uploaded")
 
     run_btn = False
     valid_files = True
-    CLOSING_M = len(meta_df)
+    CLOSING_M = len(check_uploaded_files)
 
-    if not meta_df.empty:
-        if any(not item["VALID"] for item in meta_df):
+    if not check_uploaded_files.empty:
+        if any(not item["VALID"] for item in check_uploaded_files):
             st.warning("⚠️ All files must have [yyyy]M[mm] in the name")
             valid_files = False
         
-        if meta_df["YEAR"].nunique() != 1:
+        if check_uploaded_files["YEAR"].nunique() != 1:
             st.warning("⚠️ All files must have the same year")
             valid_files = False
 
-        if meta_df["MONTH"].min() != 1:
+        if check_uploaded_files["MONTH"].min() != 1:
             st.warning("⚠️ Files must start from M1")
             valid_files = False
 
-        if meta_df["MONTH"].duplicated().any():
+        if check_uploaded_files["MONTH"].duplicated().any():
             st.warning("⚠️ Files must have unique months")
             valid_files = False
 
-        if any(not item["CONSECUTIVE"] for item in meta_df):
+        if any(not item["CONSECUTIVE"] for item in check_uploaded_files):
             st.warning("⚠️ Months within a year must be consecutive")
             valid_files = False
 
