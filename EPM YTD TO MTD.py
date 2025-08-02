@@ -95,29 +95,27 @@ with col1:
     if not check_uploaded_files.empty:
         if (~check_uploaded_files["VALID"]).any():
             st.warning("⚠️ All files must have [yyyy]M[mm] in the name")
-            st.dataframe(check_uploaded_files)
             valid_files = False
         
         if check_uploaded_files["YEAR"].nunique() != 1:
             st.warning("⚠️ All files must have the same year")
-            st.dataframe(check_uploaded_files)
             valid_files = False
 
         if check_uploaded_files["MONTH"].min() != 1:
             st.warning("⚠️ Files must start from M1")
-            st.dataframe(check_uploaded_files)
             valid_files = False
 
         if check_uploaded_files["MONTH"].duplicated().any():
             st.warning("⚠️ Files must have unique months")
-            st.dataframe(check_uploaded_files)
             valid_files = False
 
         if (~check_uploaded_files["CONSECUTIVE"]).any():
             st.warning("⚠️ Months within a year must be consecutive")
-            st.dataframe(check_uploaded_files)
             valid_files = False
 
+        if valid_files = False:
+            st.dataframe(check_uploaded_files)
+        
         if valid_files:
             CURRENCY = st.selectbox("Select currency amount:", ["LCC and EUR", "LCC only", "EUR only"])
             run_btn = st.button("🚀 Convert")
